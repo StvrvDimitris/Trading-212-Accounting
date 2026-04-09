@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="el">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trading 212 — Accounting Tool</title>
+<title>Trading 212 — Λογιστικό Εργαλείο</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
 
@@ -119,30 +119,30 @@ tr:hover td { background:rgba(79,140,255,.03); }
 <body>
 <div class="app">
   <div class="header">
-    <h1>📊 Trading 212 <span>Accounting Tool</span></h1>
+    <h1>📊 Trading 212 <span>Λογιστικό Εργαλείο</span></h1>
     <div style="display:flex;gap:8px;align-items:center;">
       <span class="muted" style="font-size:13px;" id="fileInfo"></span>
-      <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Load CSV</button>
+      <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Φόρτωση CSV</button>
       <input type="file" id="fileInput" accept=".csv" style="display:none">
     </div>
   </div>
 
   <div id="uploadZone" class="upload-zone">
     <div class="icon">📁</div>
-    <p>Drag a Trading 212 CSV file here or click to select</p>
-    <p style="font-size:12px;margin-top:4px;">Supports: Market buy/sell, Dividends, Interest, Card debit, Deposits, Cashback</p>
+    <p>Σύρετε ένα Trading 212 CSV αρχείο εδώ ή κάντε κλικ για επιλογή</p>
+    <p style="font-size:12px;margin-top:4px;">Υποστηρίζει: Market buy/sell, Dividends, Interest, Card debit, Deposits, Cashback</p>
   </div>
 
   <div id="mainContent" class="hidden">
     <div class="tabs" id="mainTabs">
-      <button class="tab active" data-tab="overview">Overview</button>
-      <button class="tab" data-tab="stocks">Stocks / ETFs</button>
-      <button class="tab" data-tab="interest">Interest</button>
-      <button class="tab" data-tab="dividends">Dividends</button>
-      <button class="tab" data-tab="transactions">Card Transactions</button>
-      <button class="tab" data-tab="deposits">Deposits</button>
+      <button class="tab active" data-tab="overview">Επισκόπηση</button>
+      <button class="tab" data-tab="stocks">Μετοχές / ETFs</button>
+      <button class="tab" data-tab="interest">Τόκοι</button>
+      <button class="tab" data-tab="dividends">Μερίσματα</button>
+      <button class="tab" data-tab="transactions">Κινήσεις Κάρτας</button>
+      <button class="tab" data-tab="deposits">Καταθέσεις</button>
       <button class="tab" data-tab="cashback">Cashback</button>
-      <button class="tab" data-tab="raw">All Data</button>
+      <button class="tab" data-tab="raw">Όλα τα Δεδομένα</button>
     </div>
 
     <!-- OVERVIEW -->
@@ -154,42 +154,42 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- STOCKS -->
     <div class="section" id="sec-stocks">
-      <div class="section-title">📈 Stock / ETF Trades</div>
+      <div class="section-title">📈 Συναλλαγές Μετοχών / ETFs</div>
       <div class="filters" id="stockFilters">
         <div class="filter-group">
           <label>Ticker</label>
-          <select id="fStockTicker"><option value="">All</option></select>
+          <select id="fStockTicker"><option value="">Όλα</option></select>
         </div>
         <div class="filter-group">
-          <label>Action</label>
+          <label>Ενέργεια</label>
           <select id="fStockAction">
-            <option value="">All</option>
-            <option value="Market buy">Buy</option>
-            <option value="Market sell">Sell</option>
+            <option value="">Όλες</option>
+            <option value="Market buy">Αγορά</option>
+            <option value="Market sell">Πώληση</option>
           </select>
         </div>
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fStockFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fStockTo">
         </div>
         <div class="filter-group">
-          <label>Min Amount €</label>
+          <label>Ελάχ. Ποσό €</label>
           <input type="number" id="fStockMinAmt" step="0.01" placeholder="0">
         </div>
         <div class="filter-group">
-          <label>Max Amount €</label>
+          <label>Μέγ. Ποσό €</label>
           <input type="number" id="fStockMaxAmt" step="0.01" placeholder="∞">
         </div>
         <div class="filter-group">
           <label>ISIN</label>
-          <input type="text" id="fStockISIN" placeholder="e.g. IE00B...">
+          <input type="text" id="fStockISIN" placeholder="π.χ. IE00B...">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearStockFilters()">Clear</button>
+          <button class="btn" onclick="clearStockFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="cards" id="stockCards"></div>
@@ -204,22 +204,22 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- INTEREST -->
     <div class="section" id="sec-interest">
-      <div class="section-title">🏦 Interest</div>
+      <div class="section-title">🏦 Τόκοι</div>
       <div class="filters" id="interestFilters">
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fIntFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fIntTo">
         </div>
         <div class="filter-group">
-          <label>Month</label>
-          <select id="fIntMonth"><option value="">All</option></select>
+          <label>Μήνας</label>
+          <select id="fIntMonth"><option value="">Όλοι</option></select>
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearIntFilters()">Clear</button>
+          <button class="btn" onclick="clearIntFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="cards" id="interestCards"></div>
@@ -234,26 +234,26 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- DIVIDENDS -->
     <div class="section" id="sec-dividends">
-      <div class="section-title">💵 Dividends</div>
+      <div class="section-title">💵 Μερίσματα</div>
       <div class="filters">
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fDivFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fDivTo">
         </div>
         <div class="filter-group">
           <label>Ticker</label>
-          <select id="fDivTicker"><option value="">All</option></select>
+          <select id="fDivTicker"><option value="">Όλα</option></select>
         </div>
         <div class="filter-group">
-          <label>Month</label>
-          <select id="fDivMonth"><option value="">All</option></select>
+          <label>Μήνας</label>
+          <select id="fDivMonth"><option value="">Όλοι</option></select>
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearDivFilters()">Clear</button>
+          <button class="btn" onclick="clearDivFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="cards" id="divCards"></div>
@@ -269,38 +269,38 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- TRANSACTIONS (Card debits) -->
     <div class="section" id="sec-transactions">
-      <div class="section-title">💳 Card Transactions</div>
+      <div class="section-title">💳 Κινήσεις Κάρτας</div>
       <div class="filters" id="txFilters">
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fTxFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fTxTo">
         </div>
         <div class="filter-group">
-          <label>Merchant</label>
-          <select id="fTxMerchant"><option value="">All</option></select>
+          <label>Έμπορος</label>
+          <select id="fTxMerchant"><option value="">Όλοι</option></select>
         </div>
         <div class="filter-group">
-          <label>Category</label>
-          <select id="fTxCategory"><option value="">All</option></select>
+          <label>Κατηγορία</label>
+          <select id="fTxCategory"><option value="">Όλες</option></select>
         </div>
         <div class="filter-group">
-          <label>Min Amount €</label>
+          <label>Ελάχ. Ποσό €</label>
           <input type="number" id="fTxMinAmt" step="0.01" placeholder="0">
         </div>
         <div class="filter-group">
-          <label>Max Amount €</label>
+          <label>Μέγ. Ποσό €</label>
           <input type="number" id="fTxMaxAmt" step="0.01" placeholder="∞">
         </div>
         <div class="filter-group">
-          <label>Month</label>
-          <select id="fTxMonth"><option value="">All</option></select>
+          <label>Μήνας</label>
+          <select id="fTxMonth"><option value="">Όλοι</option></select>
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearTxFilters()">Clear</button>
+          <button class="btn" onclick="clearTxFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="cards" id="txCards"></div>
@@ -316,18 +316,18 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- DEPOSITS -->
     <div class="section" id="sec-deposits">
-      <div class="section-title">💰 Deposits</div>
+      <div class="section-title">💰 Καταθέσεις</div>
       <div class="filters">
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fDepFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fDepTo">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearDepFilters()">Clear</button>
+          <button class="btn" onclick="clearDepFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="cards" id="depCards"></div>
@@ -344,15 +344,15 @@ tr:hover td { background:rgba(79,140,255,.03); }
       <div class="section-title">🎁 Spending Cashback</div>
       <div class="filters">
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fCbFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fCbTo">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearCbFilters()">Clear</button>
+          <button class="btn" onclick="clearCbFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="cards" id="cbCards"></div>
@@ -366,26 +366,26 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- RAW -->
     <div class="section" id="sec-raw">
-      <div class="section-title">📋 All Data</div>
+      <div class="section-title">📋 Όλα τα Δεδομένα</div>
       <div class="filters">
         <div class="filter-group">
-          <label>Type</label>
-          <select id="fRawAction"><option value="">All</option></select>
+          <label>Τύπος</label>
+          <select id="fRawAction"><option value="">Όλα</option></select>
         </div>
         <div class="filter-group">
-          <label>From</label>
+          <label>Από</label>
           <input type="date" id="fRawFrom">
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>Έως</label>
           <input type="date" id="fRawTo">
         </div>
         <div class="filter-group">
-          <label>Search</label>
-          <input type="text" id="fRawSearch" placeholder="free text...">
+          <label>Αναζήτηση</label>
+          <input type="text" id="fRawSearch" placeholder="ελεύθερο κείμενο...">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearRawFilters()">Clear</button>
+          <button class="btn" onclick="clearRawFilters()">Καθαρισμός</button>
         </div>
       </div>
       <div class="export-bar">
@@ -442,14 +442,14 @@ function loadCSV(text) {
   });
   document.getElementById('uploadZone').classList.add('hidden');
   document.getElementById('mainContent').classList.remove('hidden');
-  document.getElementById('fileInfo').textContent = `${DATA.length} records`;
+  document.getElementById('fileInfo').textContent = `${DATA.length} εγγραφές`;
   buildAll();
 }
 
 // ── Helpers ──
 const num = v => parseFloat(v) || 0;
 let CURRENCY = 'EUR';
-let LOCALE = 'en-IE';
+let LOCALE = 'el-GR';
 const cur = v => v.toLocaleString(LOCALE, { style:'currency', currency:CURRENCY, minimumFractionDigits:2 });
 const cur4 = v => v.toLocaleString(LOCALE, { minimumFractionDigits:4, maximumFractionDigits:4 }) + ' ' + CURRENCY;
 
@@ -462,8 +462,8 @@ function detectCurrency() {
   const top = Object.entries(counts).sort((a,b) => b[1] - a[1])[0];
   if (top) {
     CURRENCY = top[0];
-    const localeMap = { EUR:'en-IE', USD:'en-US', GBP:'en-GB', CHF:'de-CH', SEK:'sv-SE', DKK:'da-DK', NOK:'nb-NO', PLN:'pl-PL', CZK:'cs-CZ', HUF:'hu-HU', RON:'ro-RO', BGN:'bg-BG', TRY:'tr-TR', JPY:'ja-JP', AUD:'en-AU', CAD:'en-CA', NZD:'en-NZ' };
-    LOCALE = localeMap[CURRENCY] || 'en-US';
+    const localeMap = { EUR:'el-GR', USD:'en-US', GBP:'en-GB', CHF:'de-CH', SEK:'sv-SE', DKK:'da-DK', NOK:'nb-NO', PLN:'pl-PL', CZK:'cs-CZ', HUF:'hu-HU', RON:'ro-RO', BGN:'bg-BG', TRY:'tr-TR', JPY:'ja-JP', AUD:'en-AU', CAD:'en-CA', NZD:'en-NZ' };
+    LOCALE = localeMap[CURRENCY] || 'el-GR';
   }
 }
 const pct = v => (v * 100).toFixed(2) + '%';
@@ -471,7 +471,7 @@ const dateStr = d => d ? d.split(' ')[0] : '';
 const monthKey = d => d ? d.substring(0, 7) : '';
 const monthLabel = k => {
   const [y, m] = k.split('-');
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
   return months[parseInt(m)-1] + ' ' + y;
 };
 
@@ -486,15 +486,15 @@ function getFiltered(data, fromId, toId) {
 
 function badge(action) {
   const map = {
-    'Market buy': ['badge-buy','Buy'],
-    'Market sell': ['badge-sell','Sell'],
-    'Deposit': ['badge-dep','Deposit'],
-    'Interest on cash': ['badge-int','Interest'],
-    'Card debit': ['badge-card','Card'],
+    'Market buy': ['badge-buy','Αγορά'],
+    'Market sell': ['badge-sell','Πώληση'],
+    'Deposit': ['badge-dep','Κατάθεση'],
+    'Interest on cash': ['badge-int','Τόκος'],
+    'Card debit': ['badge-card','Κάρτα'],
     'Spending cashback': ['badge-cash','Cashback'],
-    'New card cost': ['badge-other','Card Fee'],
+    'New card cost': ['badge-other','Κάρτα Κόστος'],
   };
-  const [cls, label] = map[action] || (action && action.toLowerCase().startsWith('dividend') ? ['badge-int','Dividend'] : ['badge-other', action]);
+  const [cls, label] = map[action] || (action && action.toLowerCase().startsWith('dividend') ? ['badge-int','Μέρισμα'] : ['badge-other', action]);
   return `<span class="badge ${cls}">${label}</span>`;
 }
 
@@ -591,16 +591,16 @@ function buildOverview() {
   const totalDivTax = dividends.reduce((s, r) => { const res = num(r.Result); return s + (res < 0 ? Math.abs(res) : 0); }, 0);
 
   makeCards('overviewCards', [
-    { label: 'Total Bought', value: cur(totalBought), sub: `${buys.length} trades` },
-    { label: 'Total Sold', value: cur(totalSold), sub: `${sells.length} trades` },
-    { label: 'Profit/Loss (Result)', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative', sub: 'From sells' },
-    { label: 'Dividends (Net)', value: cur(totalDividends), cls: totalDividends > 0 ? 'positive' : '', sub: totalDivTax > 0 ? `Withheld: ${cur(totalDivTax)}` : `${dividends.length} records` },
-    { label: 'Total Interest', value: cur(totalInterest), cls: 'positive', sub: `${interest.length} records` },
-    { label: 'Deposits', value: cur(totalDeposited), sub: `${deposits.length} deposits` },
-    { label: 'Card Spending', value: cur(totalSpent), cls: 'negative', sub: `${cardDebits.length} charges` },
-    { label: 'Cashback', value: cur(totalCashback), cls: 'positive', sub: `${cashback.length} records` },
-    { label: 'FX Fees', value: cur(totalFees), cls: totalFees > 0 ? 'negative' : '', sub: 'Currency conversion' },
-    { label: 'Card Cost', value: cur(totalNewCard), sub: newCard.length ? 'New card charge' : '—' },
+    { label: 'Σύνολο Αγορών', value: cur(totalBought), sub: `${buys.length} συναλλαγές` },
+    { label: 'Σύνολο Πωλήσεων', value: cur(totalSold), sub: `${sells.length} συναλλαγές` },
+    { label: 'Κέρδος/Ζημία (Result)', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative', sub: 'Από πωλήσεις' },
+    { label: 'Μερίσματα (Καθαρά)', value: cur(totalDividends), cls: totalDividends > 0 ? 'positive' : '', sub: totalDivTax > 0 ? `Παρακράτηση: ${cur(totalDivTax)}` : `${dividends.length} εγγραφές` },
+    { label: 'Σύνολο Τόκων', value: cur(totalInterest), cls: 'positive', sub: `${interest.length} εγγραφές` },
+    { label: 'Καταθέσεις', value: cur(totalDeposited), sub: `${deposits.length} καταθέσεις` },
+    { label: 'Δαπάνες Κάρτας', value: cur(totalSpent), cls: 'negative', sub: `${cardDebits.length} χρεώσεις` },
+    { label: 'Cashback', value: cur(totalCashback), cls: 'positive', sub: `${cashback.length} εγγραφές` },
+    { label: 'FX Προμήθειες', value: cur(totalFees), cls: totalFees > 0 ? 'negative' : '', sub: 'Currency conversion' },
+    { label: 'Κόστος Κάρτας', value: cur(totalNewCard), sub: newCard.length ? 'Χρέωση νέας κάρτας' : '—' },
   ]);
 
   // Per-ticker summary
@@ -614,7 +614,7 @@ function buildOverview() {
     t.fees += num(r['Currency conversion fee']);
   });
 
-  let tickerHtml = '<h3>Per Ticker</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th>ISIN</th><th class="text-right">Bought €</th><th class="text-right">Sold €</th><th class="text-right">Shares Bought</th><th class="text-right">Shares Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">FX Fees</th><th class="text-center"># Buys</th><th class="text-center"># Sells</th></tr></thead><tbody>';
+  let tickerHtml = '<h3>Ανά Τίτλο (Ticker)</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Όνομα</th><th>ISIN</th><th class="text-right">Αγορές €</th><th class="text-right">Πωλήσεις €</th><th class="text-right">Μετοχές Αγοράς</th><th class="text-right">Μετοχές Πώλησης</th><th class="text-right">Κέρδος/Ζημία</th><th class="text-right">FX Fees</th><th class="text-center"># Αγορ.</th><th class="text-center"># Πωλ.</th></tr></thead><tbody>';
   Object.entries(tickers).forEach(([tk, t]) => {
     tickerHtml += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="mono" style="font-size:11px;">${t.isin}</td><td class="text-right mono">${cur(t.bought)}</td><td class="text-right mono">${cur(t.sold)}</td><td class="text-right mono">${t.shares_bought.toFixed(4)}</td><td class="text-right mono">${t.shares_sold.toFixed(4)}</td><td class="text-right mono ${t.result >= 0 ? 'positive' : 'negative'}">${cur(t.result)}</td><td class="text-right mono">${cur(t.fees)}</td><td class="text-center">${t.buys}</td><td class="text-center">${t.sells}</td></tr>`;
   });
@@ -638,7 +638,7 @@ function buildOverview() {
     m.fees += num(r['Currency conversion fee']);
   });
 
-  let mHtml = '<h3>Monthly Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Deposits</th><th class="text-right">Bought</th><th class="text-right">Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">Dividends</th><th class="text-right">Withheld Tax</th><th class="text-right">Interest</th><th class="text-right">Spending</th><th class="text-right">Cashback</th><th class="text-right">FX Fees</th></tr></thead><tbody>';
+  let mHtml = '<h3>Μηνιαία Ανάλυση</h3><div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Καταθέσεις</th><th class="text-right">Αγορές</th><th class="text-right">Πωλήσεις</th><th class="text-right">Κέρδος/Ζημία</th><th class="text-right">Μερίσματα</th><th class="text-right">Παρακρ. Φόρος</th><th class="text-right">Τόκοι</th><th class="text-right">Δαπάνες</th><th class="text-right">Cashback</th><th class="text-right">FX Fees</th></tr></thead><tbody>';
   Object.keys(months).sort().forEach(mk => {
     const m = months[mk];
     mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono">${cur(m.deposits)}</td><td class="text-right mono">${cur(m.bought)}</td><td class="text-right mono">${cur(m.sold)}</td><td class="text-right mono ${m.result >= 0 ? 'positive' : 'negative'}">${cur(m.result)}</td><td class="text-right mono positive">${cur(m.dividends)}</td><td class="text-right mono negative">${cur(m.divTax)}</td><td class="text-right mono positive">${cur(m.interest)}</td><td class="text-right mono negative">${cur(m.spent)}</td><td class="text-right mono">${cur(m.cashback)}</td><td class="text-right mono">${cur(m.fees)}</td></tr>`;
@@ -653,7 +653,7 @@ function buildStocks() {
   // Populate ticker filter
   const tickers = [...new Set(allStocks.map(r => r.Ticker).filter(Boolean))].sort();
   const sel = document.getElementById('fStockTicker');
-  sel.innerHTML = '<option value="">All</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
+  sel.innerHTML = '<option value="">Όλα</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
   renderStocks();
 }
 
@@ -685,15 +685,15 @@ function renderStocks() {
   const totalFees = d.reduce((s, r) => s + num(r['Currency conversion fee']), 0);
 
   makeCards('stockCards', [
-    { label: 'Bought (filtered)', value: cur(totalBought), sub: `${buys.length} trades` },
-    { label: 'Sold (filtered)', value: cur(totalSold), sub: `${sells.length} trades` },
-    { label: 'Profit/Loss', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative' },
-    { label: 'Shares Balance', value: totalShares.toFixed(6), sub: 'Buys - Sells' },
-    { label: 'Avg Buy Price', value: cur4(avgBuyPrice) },
+    { label: 'Αγορές (φιλτρ.)', value: cur(totalBought), sub: `${buys.length} συναλλ.` },
+    { label: 'Πωλήσεις (φιλτρ.)', value: cur(totalSold), sub: `${sells.length} συναλλ.` },
+    { label: 'Κέρδος/Ζημία', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative' },
+    { label: 'Υπόλοιπο Μετοχών', value: totalShares.toFixed(6), sub: 'Αγορές - Πωλήσεις' },
+    { label: 'Μ.Ο. Τιμή Αγοράς', value: cur4(avgBuyPrice) },
     { label: 'FX Fees', value: cur(totalFees) },
   ]);
 
-  const headers = ['Date','Action','Ticker','Name','ISIN','Shares','Price/Share','Currency','Exchange Rate','Result','Total €','FX Fee'];
+  const headers = ['Ημ/νία','Ενέργεια','Ticker','Όνομα','ISIN','Μετοχές','Τιμή/Μετοχή','Νόμισμα','Ισοτιμία','Αποτέλεσμα','Σύνολο €','FX Fee'];
   const rows = d.map(r => [
     r.Time, r.Action, r.Ticker, r.Name, r.ISIN,
     num(r['No. of shares']).toFixed(6),
@@ -717,9 +717,9 @@ function renderStocks() {
     else { t.sold += num(r.Total); t.sS += num(r['No. of shares']); t.result += num(r.Result); }
     t.fees += num(r['Currency conversion fee']);
   });
-  let html = '<h3>Per Ticker Summary (filtered)</h3><div class="cards">';
+  let html = '<h3>Σύνοψη ανά Ticker (φιλτραρισμένα)</h3><div class="cards">';
   Object.entries(byTk).forEach(([tk, t]) => {
-    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Bought: ${cur(t.bought)} (${t.sB.toFixed(4)} shr)</div><div class="sub">Sold: ${cur(t.sold)} (${t.sS.toFixed(4)} shr)</div><div class="sub">P&L: <span class="${t.result>=0?'positive':'negative'}">${cur(t.result)}</span></div><div class="sub">FX: ${cur(t.fees)}</div></div>`;
+    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Αγορές: ${cur(t.bought)} (${t.sB.toFixed(4)} μτχ)</div><div class="sub">Πωλήσεις: ${cur(t.sold)} (${t.sS.toFixed(4)} μτχ)</div><div class="sub">P&L: <span class="${t.result>=0?'positive':'negative'}">${cur(t.result)}</span></div><div class="sub">FX: ${cur(t.fees)}</div></div>`;
   });
   html += '</div>';
   document.getElementById('stockPerTickerSummary').innerHTML = html;
@@ -735,7 +735,7 @@ function buildInterest() {
   const all = DATA.filter(r => r.Action === 'Interest on cash');
   const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
   const sel = document.getElementById('fIntMonth');
-  sel.innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  sel.innerHTML = '<option value="">Όλοι</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
   renderInterest();
 }
 
@@ -759,17 +759,17 @@ function renderInterest() {
   });
 
   makeCards('interestCards', [
-    { label: 'Total Interest', value: cur(total), cls: 'positive', sub: `${d.length} records` },
-    { label: 'Avg / Day', value: cur(avg) },
-    { label: 'Avg / Month', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
+    { label: 'Σύνολο Τόκων', value: cur(total), cls: 'positive', sub: `${d.length} εγγραφές` },
+    { label: 'Μ.Ο. / Ημέρα', value: cur(avg) },
+    { label: 'Μ.Ο. / Μήνα', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
   ]);
 
-  const headers = ['Date', 'Amount €', 'ID'];
+  const headers = ['Ημερομηνία', 'Ποσό €', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
   buildTable('interestTable', headers, rows, [, { align: 'right' }]);
 
   // Monthly summary
-  let html = '<h3 style="margin-top:16px;">Monthly Interest Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-center">Days</th></tr></thead><tbody>';
+  let html = '<h3 style="margin-top:16px;">Μηνιαία Ανάλυση Τόκων</h3><div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Σύνολο</th><th class="text-center">Ημέρες</th></tr></thead><tbody>';
   Object.keys(byMonth).sort().forEach(mk => {
     const days = d.filter(r => monthKey(r.Time) === mk).length;
     html += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${cur(byMonth[mk])}</td><td class="text-center">${days}</td></tr>`;
@@ -792,8 +792,8 @@ function buildDividends() {
   const all = DATA.filter(r => isDividend(r.Action));
   const tickers = [...new Set(all.map(r => r.Ticker).filter(Boolean))].sort();
   const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
-  document.getElementById('fDivTicker').innerHTML = '<option value="">All</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
-  document.getElementById('fDivMonth').innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  document.getElementById('fDivTicker').innerHTML = '<option value="">Όλα</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('fDivMonth').innerHTML = '<option value="">Όλοι</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
   renderDividends();
 }
 
@@ -819,14 +819,14 @@ function renderDividends() {
   const effectiveTax = totalGross > 0 ? totalWithheldFromResult / (totalGross + totalWithheldFromResult) : 0;
 
   makeCards('divCards', [
-    { label: 'Dividends (Net)', value: cur(totalNet), cls: totalNet > 0 ? 'positive' : '', sub: `${d.length} records` },
-    { label: 'Withheld Tax', value: cur(totalWithheldFromResult), cls: totalWithheldFromResult > 0 ? 'negative' : '', sub: 'Withheld tax (Result)' },
-    { label: 'Gross Dividends', value: cur(totalNet + totalWithheldFromResult), sub: 'Net + Withheld' },
-    { label: 'Withholding Rate', value: pct(effectiveTax), sub: 'Effective withholding rate' },
+    { label: 'Μερίσματα (Καθαρά)', value: cur(totalNet), cls: totalNet > 0 ? 'positive' : '', sub: `${d.length} εγγραφές` },
+    { label: 'Παρακρατηθείς Φόρος', value: cur(totalWithheldFromResult), cls: totalWithheldFromResult > 0 ? 'negative' : '', sub: 'Withheld tax (Result)' },
+    { label: 'Μικτά Μερίσματα', value: cur(totalNet + totalWithheldFromResult), sub: 'Καθαρά + Παρακράτηση' },
+    { label: 'Συντελεστής Παρακράτησης', value: pct(effectiveTax), sub: 'Effective withholding rate' },
     { label: 'FX Fees', value: cur(totalWithheld), sub: 'Currency conversion' },
   ]);
 
-  const headers = ['Date','Type','Ticker','Name','ISIN','Amount (Net) €','Withheld Tax €','Currency','Exchange Rate','FX Fee','ID'];
+  const headers = ['Ημ/νία','Τύπος','Ticker','Όνομα','ISIN','Ποσό (Καθαρό) €','Παρακρ. Φόρος €','Νόμισμα','Ισοτιμία','FX Fee','ID'];
   const rows = d.map(r => [
     r.Time, r.Action, r.Ticker, r.Name, r.ISIN,
     num(r.Total).toFixed(2),
@@ -849,11 +849,11 @@ function renderDividends() {
     t.withheld += num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0;
     t.count++;
   });
-  let html = '<h3 style="margin-top:16px;">Per Ticker</h3>';
+  let html = '<h3 style="margin-top:16px;">Ανά Ticker</h3>';
   if (Object.keys(byTk).length === 0) {
-    html += '<p class="muted" style="padding:12px;">No dividends found. If you hold accumulating ETFs (e.g. VWCE, VUAA) this is expected.</p>';
+    html += '<p class="muted" style="padding:12px;">Δεν βρέθηκαν μερίσματα στο αρχείο. Αν κρατάτε accumulating ETFs (π.χ. VWCE, VUAA) αυτό είναι αναμενόμενο.</p>';
   } else {
-    html += '<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th class="text-right">Net €</th><th class="text-right">Withheld Tax €</th><th class="text-right">Gross €</th><th class="text-center"># Payments</th></tr></thead><tbody>';
+    html += '<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Όνομα</th><th class="text-right">Καθαρά €</th><th class="text-right">Παρακρ. Φόρος €</th><th class="text-right">Μικτά €</th><th class="text-center"># Πληρωμές</th></tr></thead><tbody>';
     Object.entries(byTk).forEach(([tk, t]) => {
       html += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="text-right mono positive">${cur(t.net)}</td><td class="text-right mono negative">${cur(t.withheld)}</td><td class="text-right mono">${cur(t.net + t.withheld)}</td><td class="text-center">${t.count}</td></tr>`;
     });
@@ -869,11 +869,11 @@ function renderDividends() {
     byMonth[mk].net += num(r.Total);
     byMonth[mk].withheld += num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0;
   });
-  let mHtml = '<h3 style="margin-top:16px;">Monthly Dividend Breakdown</h3>';
+  let mHtml = '<h3 style="margin-top:16px;">Μηνιαία Ανάλυση Μερισμάτων</h3>';
   if (Object.keys(byMonth).length === 0) {
-    mHtml += '<p class="muted" style="padding:12px;">No dividends in selected period.</p>';
+    mHtml += '<p class="muted" style="padding:12px;">Κανένα μέρισμα στην επιλεγμένη περίοδο.</p>';
   } else {
-    mHtml += '<div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Net €</th><th class="text-right">Withheld Tax €</th><th class="text-right">Gross €</th></tr></thead><tbody>';
+    mHtml += '<div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Καθαρά €</th><th class="text-right">Παρακρ. Φόρος €</th><th class="text-right">Μικτά €</th></tr></thead><tbody>';
     Object.keys(byMonth).sort().forEach(mk => {
       const m = byMonth[mk];
       mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${cur(m.net)}</td><td class="text-right mono negative">${cur(m.withheld)}</td><td class="text-right mono">${cur(m.net + m.withheld)}</td></tr>`;
@@ -895,9 +895,9 @@ function buildTransactions() {
   const categories = [...new Set(all.map(r => r['Merchant category']).filter(Boolean))].sort();
   const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
 
-  document.getElementById('fTxMerchant').innerHTML = '<option value="">All</option>' + merchants.map(m => `<option value="${m}">${m}</option>`).join('');
-  document.getElementById('fTxCategory').innerHTML = '<option value="">All</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
-  document.getElementById('fTxMonth').innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  document.getElementById('fTxMerchant').innerHTML = '<option value="">Όλοι</option>' + merchants.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('fTxCategory').innerHTML = '<option value="">Όλες</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('fTxMonth').innerHTML = '<option value="">Όλοι</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
   renderTransactions();
 }
 
@@ -924,22 +924,22 @@ function renderTransactions() {
   const max = d.length ? Math.max(...d.map(r => Math.abs(num(r.Total)))) : 0;
 
   makeCards('txCards', [
-    { label: 'Total Spending', value: cur(totalSpent), cls: 'negative', sub: `${d.length} charges` },
-    { label: 'Avg Charge', value: cur(avg) },
-    { label: 'Max Charge', value: cur(max) },
+    { label: 'Σύνολο Δαπανών', value: cur(totalSpent), cls: 'negative', sub: `${d.length} χρεώσεις` },
+    { label: 'Μ.Ο. Χρέωσης', value: cur(avg) },
+    { label: 'Μέγιστη Χρέωση', value: cur(max) },
   ]);
 
-  const headers = ['Date', 'Amount €', 'Merchant', 'Category', 'ID'];
+  const headers = ['Ημερομηνία', 'Ποσό €', 'Έμπορος', 'Κατηγορία', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r['Merchant name'] || r.Action, r['Merchant category'] || '—', r.ID]);
   buildTable('txTable', headers, rows, [, { align: 'right', fn: v => `<span class="negative">${v}</span>` }]);
 
   // By merchant
   const byMerch = {};
   d.forEach(r => {
-    const m = r['Merchant name'] || 'Other';
+    const m = r['Merchant name'] || 'Άλλο';
     byMerch[m] = (byMerch[m] || 0) + Math.abs(num(r.Total));
   });
-  let mHtml = '<h3 style="margin-top:16px;">By Merchant</h3><div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>';
+  let mHtml = '<h3 style="margin-top:16px;">Ανά Έμπορο</h3><div class="table-wrap"><table><thead><tr><th>Έμπορος</th><th class="text-right">Σύνολο</th><th class="text-right">%</th></tr></thead><tbody>';
   Object.entries(byMerch).sort((a,b)=>b[1]-a[1]).forEach(([m, v]) => {
     mHtml += `<tr><td>${m}</td><td class="text-right mono">${cur(v)}</td><td class="text-right mono">${pct(v/totalSpent)}</td></tr>`;
   });
@@ -949,10 +949,10 @@ function renderTransactions() {
   // By category
   const byCat = {};
   d.forEach(r => {
-    const c = r['Merchant category'] || 'Other';
+    const c = r['Merchant category'] || 'Άλλο';
     byCat[c] = (byCat[c] || 0) + Math.abs(num(r.Total));
   });
-  let cHtml = '<h3 style="margin-top:16px;">By Category</h3><div class="table-wrap"><table><thead><tr><th>Category</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>';
+  let cHtml = '<h3 style="margin-top:16px;">Ανά Κατηγορία</h3><div class="table-wrap"><table><thead><tr><th>Κατηγορία</th><th class="text-right">Σύνολο</th><th class="text-right">%</th></tr></thead><tbody>';
   Object.entries(byCat).sort((a,b)=>b[1]-a[1]).forEach(([c, v]) => {
     cHtml += `<tr><td>${c}</td><td class="text-right mono">${cur(v)}</td><td class="text-right mono">${pct(v/totalSpent)}</td></tr>`;
   });
@@ -978,11 +978,11 @@ function renderDeposits() {
   const avg = d.length ? total / d.length : 0;
 
   makeCards('depCards', [
-    { label: 'Σύνολο Καταθέσεων', value: cur(total), sub: `${d.length} deposits` },
-    { label: 'Avg Deposit', value: cur(avg) },
+    { label: 'Σύνολο Καταθέσεων', value: cur(total), sub: `${d.length} καταθέσεις` },
+    { label: 'Μ.Ο. Κατάθεσης', value: cur(avg) },
   ]);
 
-  const headers = ['Date', 'Amount €', 'Notes', 'ID'];
+  const headers = ['Ημερομηνία', 'Ποσό €', 'Σημειώσεις', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.Notes, r.ID]);
   buildTable('depTable', headers, rows, [, { align: 'right' }]);
 }
@@ -1011,11 +1011,11 @@ function renderCashback() {
   });
 
   makeCards('cbCards', [
-    { label: 'Total Cashback', value: cur(total), cls: 'positive', sub: `${d.length} records` },
-    { label: 'Avg / Month', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
+    { label: 'Σύνολο Cashback', value: cur(total), cls: 'positive', sub: `${d.length} εγγραφές` },
+    { label: 'Μ.Ο. / Μήνα', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
   ]);
 
-  const headers = ['Date', 'Amount €', 'ID'];
+  const headers = ['Ημερομηνία', 'Ποσό €', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
   buildTable('cbTable', headers, rows, [, { align: 'right' }]);
 }
@@ -1028,7 +1028,7 @@ function clearCbFilters() {
 // ── RAW DATA ──
 function buildRaw() {
   const actions = [...new Set(DATA.map(r => r.Action))].sort();
-  document.getElementById('fRawAction').innerHTML = '<option value="">All</option>' + actions.map(a => `<option value="${a}">${a}</option>`).join('');
+  document.getElementById('fRawAction').innerHTML = '<option value="">Όλα</option>' + actions.map(a => `<option value="${a}">${a}</option>`).join('');
   renderRaw();
 }
 
@@ -1044,7 +1044,7 @@ function renderRaw() {
   if (to) d = d.filter(r => dateStr(r.Time) <= to);
   if (search) d = d.filter(r => Object.values(r).some(v => v.toLowerCase().includes(search)));
 
-  const headers = ['Action','Date','Ticker','Name','ISIN','Shares','Τιμή','Exchange Rate','Result','Σύνολο','FX Fee','Merchant','Category'];
+  const headers = ['Ενέργεια','Ημ/νία','Ticker','Όνομα','ISIN','Μετοχές','Τιμή','Ισοτιμία','Αποτέλ.','Σύνολο','FX Fee','Έμπορος','Κατηγορία'];
   const rows = d.map(r => [
     r.Action, r.Time, r.Ticker, r.Name, r.ISIN,
     r['No. of shares'] ? num(r['No. of shares']).toFixed(6) : '',
