@@ -569,8 +569,8 @@ function buildAll() {
 
 // ── OVERVIEW ──
 function buildOverview() {
-  const buys = DATA.filter(r => r.Action === 'Market buy');
-  const sells = DATA.filter(r => r.Action === 'Market sell');
+  const buys = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Limit buy');
+  const sells = DATA.filter(r => r.Action === 'Market sell' || r.Action === 'Limit sell');
   const interest = DATA.filter(r => r.Action === 'Interest on cash');
   const deposits = DATA.filter(r => r.Action === 'Deposit');
   const cardDebits = DATA.filter(r => r.Action === 'Card debit');
@@ -609,7 +609,7 @@ function buildOverview() {
     if (!r.Ticker) return;
     if (!tickers[r.Ticker]) tickers[r.Ticker] = { name: r.Name, isin: r.ISIN, bought: 0, sold: 0, shares_bought: 0, shares_sold: 0, result: 0, buys: 0, sells: 0, fees: 0 };
     const t = tickers[r.Ticker];
-    if (r.Action === 'Market buy') { t.bought += num(r.Total); t.shares_bought += num(r['No. of shares']); t.buys++; }
+    if (r.Action === 'Market buy' || r.Action === 'Limit buy') { t.bought += num(r.Total); t.shares_bought += num(r['No. of shares']); t.buys++; }
     else { t.sold += num(r.Total); t.shares_sold += num(r['No. of shares']); t.result += num(r.Result); t.sells++; }
     t.fees += num(r['Currency conversion fee']);
   });
@@ -628,8 +628,8 @@ function buildOverview() {
     if (!mk) return;
     if (!months[mk]) months[mk] = { bought: 0, sold: 0, interest: 0, deposits: 0, spent: 0, cashback: 0, fees: 0, result: 0, dividends: 0, divTax: 0 };
     const m = months[mk];
-    if (r.Action === 'Market buy') m.bought += num(r.Total);
-    else if (r.Action === 'Market sell') { m.sold += num(r.Total); m.result += num(r.Result); }
+    if (r.Action === 'Market buy' || r.Action === 'Limit buy') m.bought += num(r.Total);
+    else if (r.Action === 'Market sell' || r.Action === 'Limit sell') { m.sold += num(r.Total); m.result += num(r.Result); }
     else if (r.Action === 'Interest on cash') m.interest += num(r.Total);
     else if (r.Action === 'Deposit') m.deposits += num(r.Total);
     else if (r.Action === 'Card debit' || r.Action === 'New card cost') m.spent += Math.abs(num(r.Total));
@@ -649,7 +649,7 @@ function buildOverview() {
 
 // ── STOCKS ──
 function buildStocks() {
-  const allStocks = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell');
+  const allStocks = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell' || r.Action === 'Limit buy' || r.Action === 'Limit sell');
   // Populate ticker filter
   const tickers = [...new Set(allStocks.map(r => r.Ticker).filter(Boolean))].sort();
   const sel = document.getElementById('fStockTicker');
@@ -658,7 +658,7 @@ function buildStocks() {
 }
 
 function renderStocks() {
-  let d = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell');
+  let d = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell' || r.Action === 'Limit buy' || r.Action === 'Limit sell');
   const ticker = document.getElementById('fStockTicker').value;
   const action = document.getElementById('fStockAction').value;
   const from = document.getElementById('fStockFrom').value;
@@ -675,8 +675,8 @@ function renderStocks() {
   if (maxAmt < Infinity) d = d.filter(r => Math.abs(num(r.Total)) <= maxAmt);
   if (isin) d = d.filter(r => r.ISIN.toUpperCase().includes(isin));
 
-  const buys = d.filter(r => r.Action === 'Market buy');
-  const sells = d.filter(r => r.Action === 'Market sell');
+  const buys = d.filter(r => r.Action === 'Market buy' || r.Action === 'Limit buy');
+  const sells = d.filter(r => r.Action === 'Market sell' || r.Action === 'Limit sell');
   const totalBought = buys.reduce((s, r) => s + num(r.Total), 0);
   const totalSold = sells.reduce((s, r) => s + num(r.Total), 0);
   const totalShares = buys.reduce((s, r) => s + num(r['No. of shares']), 0) - sells.reduce((s, r) => s + num(r['No. of shares']), 0);
@@ -713,7 +713,7 @@ function renderStocks() {
     if (!r.Ticker) return;
     if (!byTk[r.Ticker]) byTk[r.Ticker] = { bought: 0, sold: 0, sB: 0, sS: 0, result: 0, fees: 0 };
     const t = byTk[r.Ticker];
-    if (r.Action === 'Market buy') { t.bought += num(r.Total); t.sB += num(r['No. of shares']); }
+    if (r.Action === 'Market buy' || r.Action === 'Limit buy') { t.bought += num(r.Total); t.sB += num(r['No. of shares']); }
     else { t.sold += num(r.Total); t.sS += num(r['No. of shares']); t.result += num(r.Result); }
     t.fees += num(r['Currency conversion fee']);
   });
