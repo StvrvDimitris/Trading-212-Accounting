@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading 212 — Accounting Tool</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f1117;
+  --surface: #181a22;
+  --surface2: #1e2130;
+  --border: #2a2d3a;
+  --text: #e2e4ec;
+  --text2: #8b8fa3;
+  --accent: #4f8cff;
+  --accent2: #3a6fd8;
+  --green: #34d399;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --orange: #fb923c;
+  --purple: #a78bfa;
+  --radius: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.mono { font-family:'JetBrains Mono',monospace; }
+
+/* Layout */
+.app { max-width:1400px; margin:0 auto; padding:20px; }
+.header { display:flex; align-items:center; justify-content:space-between; padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+.header h1 span { color:var(--accent); }
+
+/* Upload */
+.upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:40px; text-align:center; cursor:pointer; transition:all .2s; margin-bottom:24px; }
+.upload-zone:hover, .upload-zone.drag { border-color:var(--accent); background:rgba(79,140,255,.05); }
+.upload-zone p { color:var(--text2); margin-top:8px; font-size:14px; }
+.upload-zone .icon { font-size:36px; }
+
+/* Tabs */
+.tabs { display:flex; gap:4px; background:var(--surface); border-radius:var(--radius); padding:4px; margin-bottom:24px; flex-wrap:wrap; }
+.tab { padding:10px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:500; color:var(--text2); transition:all .15s; border:none; background:none; white-space:nowrap; }
+.tab:hover { color:var(--text); }
+.tab.active { background:var(--accent); color:#fff; }
+
+/* Cards */
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+.card .label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text2); margin-bottom:6px; }
+.card .value { font-size:22px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+.card .sub { font-size:12px; color:var(--text2); margin-top:4px; }
+.positive { color:var(--green); }
+.negative { color:var(--red); }
+.neutral { color:var(--yellow); }
+
+/* Filters */
+.filters { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+.filter-group { display:flex; flex-direction:column; gap:4px; }
+.filter-group label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text2); }
+.filter-group input, .filter-group select { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:6px; font-size:13px; font-family:'DM Sans',sans-serif; min-width:140px; }
+.filter-group input:focus, .filter-group select:focus { outline:none; border-color:var(--accent); }
+.btn { padding:8px 16px; border-radius:6px; border:1px solid var(--border); background:var(--surface2); color:var(--text); cursor:pointer; font-size:13px; font-family:'DM Sans',sans-serif; transition:all .15s; }
+.btn:hover { border-color:var(--accent); }
+.btn-accent { background:var(--accent); border-color:var(--accent); color:#fff; }
+.btn-accent:hover { background:var(--accent2); }
+.btn-sm { padding:5px 10px; font-size:12px; }
+
+/* Tables */
+.table-wrap { overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:24px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { background:var(--surface2); padding:10px 14px; text-align:left; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text2); position:sticky; top:0; cursor:pointer; user-select:none; white-space:nowrap; }
+th.text-right { text-align:right; }
+th.text-center { text-align:center; }
+th:hover { color:var(--text); }
+th .sort-arrow { margin-left:4px; opacity:.4; }
+th.sorted .sort-arrow { opacity:1; color:var(--accent); }
+td { padding:9px 14px; border-top:1px solid var(--border); white-space:nowrap; }
+tr:hover td { background:rgba(79,140,255,.03); }
+.table-scroll { max-height:500px; overflow-y:auto; }
+
+/* Section */
+.section { display:none; }
+.section.active { display:block; }
+.section-title { font-size:16px; font-weight:600; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+/* Export */
+.export-bar { display:flex; gap:8px; justify-content:flex-end; margin-bottom:12px; flex-wrap:wrap; }
+
+/* Badge */
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge-buy { background:rgba(52,211,153,.15); color:var(--green); }
+.badge-sell { background:rgba(248,113,113,.15); color:var(--red); }
+.badge-dep { background:rgba(79,140,255,.15); color:var(--accent); }
+.badge-int { background:rgba(167,139,250,.15); color:var(--purple); }
+.badge-card { background:rgba(251,191,36,.15); color:var(--yellow); }
+.badge-cash { background:rgba(251,146,60,.15); color:var(--orange); }
+.badge-other { background:rgba(139,143,163,.15); color:var(--text2); }
+
+/* Summary group */
+.summary-group { margin-bottom:24px; }
+.summary-group h3 { font-size:14px; font-weight:600; margin-bottom:10px; color:var(--text2); }
+
+/* Responsive */
+@media(max-width:768px) {
+  .cards { grid-template-columns:1fr 1fr; }
+  .filters { flex-direction:column; }
+  .filter-group input, .filter-group select { min-width:100%; }
+}
+
+.hidden { display:none !important; }
+.text-right { text-align:right; }
+.text-center { text-align:center; }
+.muted { color:var(--text2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>📊 Trading 212 <span>Accounting Tool</span></h1>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="muted" style="font-size:13px;" id="fileInfo"></span>
+      <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Load CSV</button>
+      <input type="file" id="fileInput" accept=".csv" style="display:none">
+    </div>
+  </div>
+
+  <div id="uploadZone" class="upload-zone">
+    <div class="icon">📁</div>
+    <p>Drag a Trading 212 CSV file here or click to select</p>
+    <p style="font-size:12px;margin-top:4px;">Supports: Market buy/sell, Dividends, Interest, Card debit, Deposits, Cashback</p>
+  </div>
+
+  <div id="mainContent" class="hidden">
+    <div class="tabs" id="mainTabs">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="stocks">Stocks / ETFs</button>
+      <button class="tab" data-tab="interest">Interest</button>
+      <button class="tab" data-tab="dividends">Dividends</button>
+      <button class="tab" data-tab="transactions">Card Transactions</button>
+      <button class="tab" data-tab="deposits">Deposits</button>
+      <button class="tab" data-tab="cashback">Cashback</button>
+      <button class="tab" data-tab="raw">All Data</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="sec-overview">
+      <div class="cards" id="overviewCards"></div>
+      <div class="summary-group" id="tickerSummary"></div>
+      <div class="summary-group" id="monthlyBreakdown"></div>
+    </div>
+
+    <!-- STOCKS -->
+    <div class="section" id="sec-stocks">
+      <div class="section-title">📈 Stock / ETF Trades</div>
+      <div class="filters" id="stockFilters">
+        <div class="filter-group">
+          <label>Ticker</label>
+          <select id="fStockTicker"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Action</label>
+          <select id="fStockAction">
+            <option value="">All</option>
+            <option value="Market buy">Buy</option>
+            <option value="Market sell">Sell</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fStockFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fStockTo">
+        </div>
+        <div class="filter-group">
+          <label>Min Amount €</label>
+          <input type="number" id="fStockMinAmt" step="0.01" placeholder="0">
+        </div>
+        <div class="filter-group">
+          <label>Max Amount €</label>
+          <input type="number" id="fStockMaxAmt" step="0.01" placeholder="∞">
+        </div>
+        <div class="filter-group">
+          <label>ISIN</label>
+          <input type="text" id="fStockISIN" placeholder="e.g. IE00B...">
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearStockFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="cards" id="stockCards"></div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('stockTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="stockTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+      <div class="summary-group" id="stockPerTickerSummary"></div>
+    </div>
+
+    <!-- INTEREST -->
+    <div class="section" id="sec-interest">
+      <div class="section-title">🏦 Interest</div>
+      <div class="filters" id="interestFilters">
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fIntFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fIntTo">
+        </div>
+        <div class="filter-group">
+          <label>Month</label>
+          <select id="fIntMonth"><option value="">All</option></select>
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearIntFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="cards" id="interestCards"></div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('interestTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="interestTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+      <div id="interestMonthly"></div>
+    </div>
+
+    <!-- DIVIDENDS -->
+    <div class="section" id="sec-dividends">
+      <div class="section-title">💵 Dividends</div>
+      <div class="filters">
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fDivFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fDivTo">
+        </div>
+        <div class="filter-group">
+          <label>Ticker</label>
+          <select id="fDivTicker"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Month</label>
+          <select id="fDivMonth"><option value="">All</option></select>
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearDivFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="cards" id="divCards"></div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('divTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="divTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+      <div id="divPerTickerSummary"></div>
+      <div id="divMonthlySummary"></div>
+    </div>
+
+    <!-- TRANSACTIONS (Card debits) -->
+    <div class="section" id="sec-transactions">
+      <div class="section-title">💳 Card Transactions</div>
+      <div class="filters" id="txFilters">
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fTxFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fTxTo">
+        </div>
+        <div class="filter-group">
+          <label>Merchant</label>
+          <select id="fTxMerchant"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Category</label>
+          <select id="fTxCategory"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Min Amount €</label>
+          <input type="number" id="fTxMinAmt" step="0.01" placeholder="0">
+        </div>
+        <div class="filter-group">
+          <label>Max Amount €</label>
+          <input type="number" id="fTxMaxAmt" step="0.01" placeholder="∞">
+        </div>
+        <div class="filter-group">
+          <label>Month</label>
+          <select id="fTxMonth"><option value="">All</option></select>
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearTxFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="cards" id="txCards"></div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('txTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="txTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+      <div id="txMerchantSummary"></div>
+      <div id="txCategorySummary"></div>
+    </div>
+
+    <!-- DEPOSITS -->
+    <div class="section" id="sec-deposits">
+      <div class="section-title">💰 Deposits</div>
+      <div class="filters">
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fDepFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fDepTo">
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearDepFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="cards" id="depCards"></div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('depTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="depTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- CASHBACK -->
+    <div class="section" id="sec-cashback">
+      <div class="section-title">🎁 Spending Cashback</div>
+      <div class="filters">
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fCbFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fCbTo">
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearCbFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="cards" id="cbCards"></div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('cbTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="cbTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- RAW -->
+    <div class="section" id="sec-raw">
+      <div class="section-title">📋 All Data</div>
+      <div class="filters">
+        <div class="filter-group">
+          <label>Type</label>
+          <select id="fRawAction"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="fRawFrom">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="fRawTo">
+        </div>
+        <div class="filter-group">
+          <label>Search</label>
+          <input type="text" id="fRawSearch" placeholder="free text...">
+        </div>
+        <div class="filter-group" style="align-self:end;">
+          <button class="btn" onclick="clearRawFilters()">Clear</button>
+        </div>
+      </div>
+      <div class="export-bar">
+        <button class="btn btn-sm" onclick="exportCSV('rawTable')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="rawTable"><thead><tr></tr></thead><tbody></tbody></table>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let DATA = [];
+let HEADERS = [];
+let sortState = {};
+
+// ── CSV Parser ──
+function parseCSV(text) {
+  const rows = [];
+  let current = '', inQuotes = false, row = [], i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i+1] === '"') { current += '"'; i += 2; }
+      else if (ch === '"') { inQuotes = false; i++; }
+      else { current += ch; i++; }
+    } else {
+      if (ch === '"') { inQuotes = true; i++; }
+      else if (ch === ',') { row.push(current.trim()); current = ''; i++; }
+      else if (ch === '\n' || ch === '\r') {
+        row.push(current.trim()); current = '';
+        if (row.some(c => c !== '')) rows.push(row);
+        row = [];
+        if (ch === '\r' && text[i+1] === '\n') i++;
+        i++;
+      } else { current += ch; i++; }
+    }
+  }
+  row.push(current.trim());
+  if (row.some(c => c !== '')) rows.push(row);
+  return rows;
+}
+
+function loadCSV(text) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return;
+  HEADERS = rows[0];
+  DATA = rows.slice(1).map(r => {
+    const obj = {};
+    HEADERS.forEach((h, i) => obj[h] = r[i] || '');
+    return obj;
+  });
+  document.getElementById('uploadZone').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('fileInfo').textContent = `${DATA.length} records`;
+  buildAll();
+}
+
+// ── Helpers ──
+const num = v => parseFloat(v) || 0;
+const eur = v => v.toLocaleString('el-GR', { style:'currency', currency:'EUR', minimumFractionDigits:2 });
+const eur4 = v => v.toLocaleString('el-GR', { minimumFractionDigits:4, maximumFractionDigits:4 }) + ' €';
+const pct = v => (v * 100).toFixed(2) + '%';
+const dateStr = d => d ? d.split(' ')[0] : '';
+const monthKey = d => d ? d.substring(0, 7) : '';
+const monthLabel = k => {
+  const [y, m] = k.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[parseInt(m)-1] + ' ' + y;
+};
+
+function getFiltered(data, fromId, toId) {
+  let d = [...data];
+  const from = document.getElementById(fromId)?.value;
+  const to = document.getElementById(toId)?.value;
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+  return d;
+}
+
+function badge(action) {
+  const map = {
+    'Market buy': ['badge-buy','Buy'],
+    'Market sell': ['badge-sell','Sell'],
+    'Deposit': ['badge-dep','Deposit'],
+    'Interest on cash': ['badge-int','Interest'],
+    'Card debit': ['badge-card','Card'],
+    'Spending cashback': ['badge-cash','Cashback'],
+    'New card cost': ['badge-other','Card Fee'],
+  };
+  const [cls, label] = map[action] || (action && action.toLowerCase().startsWith('dividend') ? ['badge-int','Dividend'] : ['badge-other', action]);
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+// ── Card builder ──
+function makeCards(containerId, items) {
+  document.getElementById(containerId).innerHTML = items.map(c =>
+    `<div class="card"><div class="label">${c.label}</div><div class="value ${c.cls||''} mono">${c.value}</div>${c.sub?`<div class="sub">${c.sub}</div>`:''}</div>`
+  ).join('');
+}
+
+// ── Table builder with sorting ──
+function buildTable(tableId, headers, rows, formatters) {
+  const table = document.getElementById(tableId);
+  const thead = table.querySelector('thead tr');
+  thead.innerHTML = headers.map((h, i) =>
+    `<th data-col="${i}" class="${formatters?.[i]?.align === 'right' ? 'text-right' : ''}" onclick="sortTable('${tableId}',${i})">${h} <span class="sort-arrow">⇅</span></th>`
+  ).join('');
+  fillTableBody(tableId, rows, formatters);
+}
+
+function fillTableBody(tableId, rows, formatters) {
+  const tbody = document.getElementById(tableId).querySelector('tbody');
+  tbody.innerHTML = rows.map(r =>
+    '<tr>' + r.map((c, i) => `<td${formatters?.[i]?.align === 'right' ? ' class="text-right mono"' : ''}>${formatters?.[i]?.fn ? formatters[i].fn(c) : (c ?? '')}</td>`).join('') + '</tr>'
+  ).join('');
+}
+
+function sortTable(tableId, colIdx) {
+  const key = tableId + '_' + colIdx;
+  const dir = sortState[key] === 'asc' ? 'desc' : 'asc';
+  sortState[key] = dir;
+  const tbody = document.getElementById(tableId).querySelector('tbody');
+  const rows = Array.from(tbody.rows);
+  rows.sort((a, b) => {
+    let va = a.cells[colIdx].textContent.replace(/[€\s.]/g, '').replace(',', '.');
+    let vb = b.cells[colIdx].textContent.replace(/[€\s.]/g, '').replace(',', '.');
+    const na = parseFloat(va), nb = parseFloat(vb);
+    if (!isNaN(na) && !isNaN(nb)) return dir === 'asc' ? na - nb : nb - na;
+    return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+  // Update header styling
+  document.querySelectorAll(`#${tableId} th`).forEach(th => th.classList.remove('sorted'));
+  document.querySelector(`#${tableId} th[data-col="${colIdx}"]`)?.classList.add('sorted');
+}
+
+// ── CSV Export ──
+function exportCSV(tableId) {
+  const table = document.getElementById(tableId);
+  const rows = Array.from(table.querySelectorAll('tr'));
+  const csv = rows.map(r => Array.from(r.querySelectorAll('th,td')).map(c => `"${c.textContent.replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = tableId + '_export.csv';
+  a.click();
+}
+
+// ── Build all sections ──
+function buildAll() {
+  buildOverview();
+  buildStocks();
+  buildInterest();
+  buildDividends();
+  buildTransactions();
+  buildDeposits();
+  buildCashback();
+  buildRaw();
+  attachFilterListeners();
+}
+
+// ── OVERVIEW ──
+function buildOverview() {
+  const buys = DATA.filter(r => r.Action === 'Market buy');
+  const sells = DATA.filter(r => r.Action === 'Market sell');
+  const interest = DATA.filter(r => r.Action === 'Interest on cash');
+  const deposits = DATA.filter(r => r.Action === 'Deposit');
+  const cardDebits = DATA.filter(r => r.Action === 'Card debit');
+  const cashback = DATA.filter(r => r.Action === 'Spending cashback');
+  const newCard = DATA.filter(r => r.Action === 'New card cost');
+  const dividends = DATA.filter(r => isDividend(r.Action));
+
+  const totalBought = buys.reduce((s, r) => s + num(r.Total), 0);
+  const totalSold = sells.reduce((s, r) => s + num(r.Total), 0);
+  const totalResult = sells.reduce((s, r) => s + num(r.Result), 0);
+  const totalInterest = interest.reduce((s, r) => s + num(r.Total), 0);
+  const totalDeposited = deposits.reduce((s, r) => s + num(r.Total), 0);
+  const totalSpent = cardDebits.reduce((s, r) => s + Math.abs(num(r.Total)), 0);
+  const totalCashback = cashback.reduce((s, r) => s + num(r.Total), 0);
+  const totalFees = DATA.reduce((s, r) => s + num(r['Currency conversion fee']), 0);
+  const totalNewCard = newCard.reduce((s, r) => s + Math.abs(num(r.Total)), 0);
+  const totalDividends = dividends.reduce((s, r) => s + num(r.Total), 0);
+  const totalDivTax = dividends.reduce((s, r) => { const res = num(r.Result); return s + (res < 0 ? Math.abs(res) : 0); }, 0);
+
+  makeCards('overviewCards', [
+    { label: 'Total Bought', value: eur(totalBought), sub: `${buys.length} trades` },
+    { label: 'Total Sold', value: eur(totalSold), sub: `${sells.length} trades` },
+    { label: 'Profit/Loss (Result)', value: eur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative', sub: 'From sells' },
+    { label: 'Dividends (Net)', value: eur(totalDividends), cls: totalDividends > 0 ? 'positive' : '', sub: totalDivTax > 0 ? `Withheld: ${eur(totalDivTax)}` : `${dividends.length} records` },
+    { label: 'Total Interest', value: eur(totalInterest), cls: 'positive', sub: `${interest.length} records` },
+    { label: 'Deposits', value: eur(totalDeposited), sub: `${deposits.length} deposits` },
+    { label: 'Card Spending', value: eur(totalSpent), cls: 'negative', sub: `${cardDebits.length} charges` },
+    { label: 'Cashback', value: eur(totalCashback), cls: 'positive', sub: `${cashback.length} records` },
+    { label: 'FX Fees', value: eur(totalFees), cls: totalFees > 0 ? 'negative' : '', sub: 'Currency conversion' },
+    { label: 'Card Cost', value: eur(totalNewCard), sub: newCard.length ? 'New card charge' : '—' },
+  ]);
+
+  // Per-ticker summary
+  const tickers = {};
+  [...buys, ...sells].forEach(r => {
+    if (!r.Ticker) return;
+    if (!tickers[r.Ticker]) tickers[r.Ticker] = { name: r.Name, isin: r.ISIN, bought: 0, sold: 0, shares_bought: 0, shares_sold: 0, result: 0, buys: 0, sells: 0, fees: 0 };
+    const t = tickers[r.Ticker];
+    if (r.Action === 'Market buy') { t.bought += num(r.Total); t.shares_bought += num(r['No. of shares']); t.buys++; }
+    else { t.sold += num(r.Total); t.shares_sold += num(r['No. of shares']); t.result += num(r.Result); t.sells++; }
+    t.fees += num(r['Currency conversion fee']);
+  });
+
+  let tickerHtml = '<h3>Per Ticker</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th>ISIN</th><th class="text-right">Bought €</th><th class="text-right">Sold €</th><th class="text-right">Shares Bought</th><th class="text-right">Shares Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">FX Fees</th><th class="text-center"># Buys</th><th class="text-center"># Sells</th></tr></thead><tbody>';
+  Object.entries(tickers).forEach(([tk, t]) => {
+    tickerHtml += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="mono" style="font-size:11px;">${t.isin}</td><td class="text-right mono">${eur(t.bought)}</td><td class="text-right mono">${eur(t.sold)}</td><td class="text-right mono">${t.shares_bought.toFixed(4)}</td><td class="text-right mono">${t.shares_sold.toFixed(4)}</td><td class="text-right mono ${t.result >= 0 ? 'positive' : 'negative'}">${eur(t.result)}</td><td class="text-right mono">${eur(t.fees)}</td><td class="text-center">${t.buys}</td><td class="text-center">${t.sells}</td></tr>`;
+  });
+  tickerHtml += '</tbody></table></div>';
+  document.getElementById('tickerSummary').innerHTML = tickerHtml;
+
+  // Monthly breakdown
+  const months = {};
+  DATA.forEach(r => {
+    const mk = monthKey(r.Time);
+    if (!mk) return;
+    if (!months[mk]) months[mk] = { bought: 0, sold: 0, interest: 0, deposits: 0, spent: 0, cashback: 0, fees: 0, result: 0, dividends: 0, divTax: 0 };
+    const m = months[mk];
+    if (r.Action === 'Market buy') m.bought += num(r.Total);
+    else if (r.Action === 'Market sell') { m.sold += num(r.Total); m.result += num(r.Result); }
+    else if (r.Action === 'Interest on cash') m.interest += num(r.Total);
+    else if (r.Action === 'Deposit') m.deposits += num(r.Total);
+    else if (r.Action === 'Card debit' || r.Action === 'New card cost') m.spent += Math.abs(num(r.Total));
+    else if (r.Action === 'Spending cashback') m.cashback += num(r.Total);
+    else if (isDividend(r.Action)) { m.dividends += num(r.Total); const res = num(r.Result); if (res < 0) m.divTax += Math.abs(res); }
+    m.fees += num(r['Currency conversion fee']);
+  });
+
+  let mHtml = '<h3>Monthly Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Deposits</th><th class="text-right">Bought</th><th class="text-right">Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">Dividends</th><th class="text-right">Withheld Tax</th><th class="text-right">Interest</th><th class="text-right">Spending</th><th class="text-right">Cashback</th><th class="text-right">FX Fees</th></tr></thead><tbody>';
+  Object.keys(months).sort().forEach(mk => {
+    const m = months[mk];
+    mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono">${eur(m.deposits)}</td><td class="text-right mono">${eur(m.bought)}</td><td class="text-right mono">${eur(m.sold)}</td><td class="text-right mono ${m.result >= 0 ? 'positive' : 'negative'}">${eur(m.result)}</td><td class="text-right mono positive">${eur(m.dividends)}</td><td class="text-right mono negative">${eur(m.divTax)}</td><td class="text-right mono positive">${eur(m.interest)}</td><td class="text-right mono negative">${eur(m.spent)}</td><td class="text-right mono">${eur(m.cashback)}</td><td class="text-right mono">${eur(m.fees)}</td></tr>`;
+  });
+  mHtml += '</tbody></table></div>';
+  document.getElementById('monthlyBreakdown').innerHTML = mHtml;
+}
+
+// ── STOCKS ──
+function buildStocks() {
+  const allStocks = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell');
+  // Populate ticker filter
+  const tickers = [...new Set(allStocks.map(r => r.Ticker).filter(Boolean))].sort();
+  const sel = document.getElementById('fStockTicker');
+  sel.innerHTML = '<option value="">All</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
+  renderStocks();
+}
+
+function renderStocks() {
+  let d = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell');
+  const ticker = document.getElementById('fStockTicker').value;
+  const action = document.getElementById('fStockAction').value;
+  const from = document.getElementById('fStockFrom').value;
+  const to = document.getElementById('fStockTo').value;
+  const minAmt = num(document.getElementById('fStockMinAmt').value);
+  const maxAmt = document.getElementById('fStockMaxAmt').value ? num(document.getElementById('fStockMaxAmt').value) : Infinity;
+  const isin = document.getElementById('fStockISIN').value.toUpperCase();
+
+  if (ticker) d = d.filter(r => r.Ticker === ticker);
+  if (action) d = d.filter(r => r.Action === action);
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+  if (minAmt) d = d.filter(r => Math.abs(num(r.Total)) >= minAmt);
+  if (maxAmt < Infinity) d = d.filter(r => Math.abs(num(r.Total)) <= maxAmt);
+  if (isin) d = d.filter(r => r.ISIN.toUpperCase().includes(isin));
+
+  const buys = d.filter(r => r.Action === 'Market buy');
+  const sells = d.filter(r => r.Action === 'Market sell');
+  const totalBought = buys.reduce((s, r) => s + num(r.Total), 0);
+  const totalSold = sells.reduce((s, r) => s + num(r.Total), 0);
+  const totalShares = buys.reduce((s, r) => s + num(r['No. of shares']), 0) - sells.reduce((s, r) => s + num(r['No. of shares']), 0);
+  const totalResult = sells.reduce((s, r) => s + num(r.Result), 0);
+  const avgBuyPrice = buys.length ? buys.reduce((s, r) => s + num(r['Price / share']), 0) / buys.length : 0;
+  const totalFees = d.reduce((s, r) => s + num(r['Currency conversion fee']), 0);
+
+  makeCards('stockCards', [
+    { label: 'Bought (filtered)', value: eur(totalBought), sub: `${buys.length} trades` },
+    { label: 'Sold (filtered)', value: eur(totalSold), sub: `${sells.length} trades` },
+    { label: 'Profit/Loss', value: eur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative' },
+    { label: 'Shares Balance', value: totalShares.toFixed(6), sub: 'Buys - Sells' },
+    { label: 'Avg Buy Price', value: eur4(avgBuyPrice) },
+    { label: 'FX Fees', value: eur(totalFees) },
+  ]);
+
+  const headers = ['Date','Action','Ticker','Name','ISIN','Shares','Price/Share','Currency','Exchange Rate','Result','Total €','FX Fee'];
+  const rows = d.map(r => [
+    r.Time, r.Action, r.Ticker, r.Name, r.ISIN,
+    num(r['No. of shares']).toFixed(6),
+    num(r['Price / share']).toFixed(4),
+    r['Currency (Price / share)'],
+    num(r['Exchange rate']).toFixed(8),
+    num(r.Result).toFixed(2),
+    num(r.Total).toFixed(2),
+    num(r['Currency conversion fee']).toFixed(2)
+  ]);
+  const fmt = [,{fn: v => badge(v)},,,,{align:'right'},{align:'right'},,{align:'right'},{align:'right',fn:v=>`<span class="${num(v)>=0?'positive':'negative'}">${v}</span>`},{align:'right'},{align:'right'}];
+  buildTable('stockTable', headers, rows, fmt);
+
+  // Per-ticker breakdown for filtered data
+  const byTk = {};
+  d.forEach(r => {
+    if (!r.Ticker) return;
+    if (!byTk[r.Ticker]) byTk[r.Ticker] = { bought: 0, sold: 0, sB: 0, sS: 0, result: 0, fees: 0 };
+    const t = byTk[r.Ticker];
+    if (r.Action === 'Market buy') { t.bought += num(r.Total); t.sB += num(r['No. of shares']); }
+    else { t.sold += num(r.Total); t.sS += num(r['No. of shares']); t.result += num(r.Result); }
+    t.fees += num(r['Currency conversion fee']);
+  });
+  let html = '<h3>Per Ticker Summary (filtered)</h3><div class="cards">';
+  Object.entries(byTk).forEach(([tk, t]) => {
+    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Bought: ${eur(t.bought)} (${t.sB.toFixed(4)} shr)</div><div class="sub">Sold: ${eur(t.sold)} (${t.sS.toFixed(4)} shr)</div><div class="sub">P&L: <span class="${t.result>=0?'positive':'negative'}">${eur(t.result)}</span></div><div class="sub">FX: ${eur(t.fees)}</div></div>`;
+  });
+  html += '</div>';
+  document.getElementById('stockPerTickerSummary').innerHTML = html;
+}
+
+function clearStockFilters() {
+  ['fStockTicker','fStockAction','fStockFrom','fStockTo','fStockMinAmt','fStockMaxAmt','fStockISIN'].forEach(id => document.getElementById(id).value = '');
+  renderStocks();
+}
+
+// ── INTEREST ──
+function buildInterest() {
+  const all = DATA.filter(r => r.Action === 'Interest on cash');
+  const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
+  const sel = document.getElementById('fIntMonth');
+  sel.innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  renderInterest();
+}
+
+function renderInterest() {
+  let d = DATA.filter(r => r.Action === 'Interest on cash');
+  const from = document.getElementById('fIntFrom').value;
+  const to = document.getElementById('fIntTo').value;
+  const month = document.getElementById('fIntMonth').value;
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+  if (month) d = d.filter(r => monthKey(r.Time) === month);
+
+  const total = d.reduce((s, r) => s + num(r.Total), 0);
+  const avg = d.length ? total / d.length : 0;
+
+  // Monthly sums
+  const byMonth = {};
+  d.forEach(r => {
+    const mk = monthKey(r.Time);
+    byMonth[mk] = (byMonth[mk] || 0) + num(r.Total);
+  });
+
+  makeCards('interestCards', [
+    { label: 'Total Interest', value: eur(total), cls: 'positive', sub: `${d.length} records` },
+    { label: 'Avg / Day', value: eur(avg) },
+    { label: 'Avg / Month', value: eur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
+  ]);
+
+  const headers = ['Date', 'Amount €', 'ID'];
+  const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
+  buildTable('interestTable', headers, rows, [, { align: 'right' }]);
+
+  // Monthly summary
+  let html = '<h3 style="margin-top:16px;">Monthly Interest Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-center">Days</th></tr></thead><tbody>';
+  Object.keys(byMonth).sort().forEach(mk => {
+    const days = d.filter(r => monthKey(r.Time) === mk).length;
+    html += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${eur(byMonth[mk])}</td><td class="text-center">${days}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('interestMonthly').innerHTML = html;
+}
+
+function clearIntFilters() {
+  ['fIntFrom','fIntTo','fIntMonth'].forEach(id => document.getElementById(id).value = '');
+  renderInterest();
+}
+
+// ── DIVIDENDS ──
+function isDividend(action) {
+  return action && action.toLowerCase().startsWith('dividend');
+}
+
+function buildDividends() {
+  const all = DATA.filter(r => isDividend(r.Action));
+  const tickers = [...new Set(all.map(r => r.Ticker).filter(Boolean))].sort();
+  const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
+  document.getElementById('fDivTicker').innerHTML = '<option value="">All</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('fDivMonth').innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  renderDividends();
+}
+
+function renderDividends() {
+  let d = DATA.filter(r => isDividend(r.Action));
+  const from = document.getElementById('fDivFrom').value;
+  const to = document.getElementById('fDivTo').value;
+  const ticker = document.getElementById('fDivTicker').value;
+  const month = document.getElementById('fDivMonth').value;
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+  if (ticker) d = d.filter(r => r.Ticker === ticker);
+  if (month) d = d.filter(r => monthKey(r.Time) === month);
+
+  const totalGross = d.reduce((s, r) => s + num(r.Total), 0);
+  const totalWithheld = d.reduce((s, r) => s + Math.abs(num(r['Currency conversion fee'])), 0);
+  // T212 shows withholding tax in the Result column as a negative for dividend rows
+  const totalWithheldFromResult = d.reduce((s, r) => {
+    const res = num(r.Result);
+    return s + (res < 0 ? Math.abs(res) : 0);
+  }, 0);
+  const totalNet = totalGross;
+  const effectiveTax = totalGross > 0 ? totalWithheldFromResult / (totalGross + totalWithheldFromResult) : 0;
+
+  makeCards('divCards', [
+    { label: 'Dividends (Net)', value: eur(totalNet), cls: totalNet > 0 ? 'positive' : '', sub: `${d.length} records` },
+    { label: 'Withheld Tax', value: eur(totalWithheldFromResult), cls: totalWithheldFromResult > 0 ? 'negative' : '', sub: 'Withheld tax (Result)' },
+    { label: 'Gross Dividends', value: eur(totalNet + totalWithheldFromResult), sub: 'Net + Withheld' },
+    { label: 'Withholding Rate', value: pct(effectiveTax), sub: 'Effective withholding rate' },
+    { label: 'FX Fees', value: eur(totalWithheld), sub: 'Currency conversion' },
+  ]);
+
+  const headers = ['Date','Type','Ticker','Name','ISIN','Amount (Net) €','Withheld Tax €','Currency','Exchange Rate','FX Fee','ID'];
+  const rows = d.map(r => [
+    r.Time, r.Action, r.Ticker, r.Name, r.ISIN,
+    num(r.Total).toFixed(2),
+    (num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0).toFixed(2),
+    r['Currency (Total)'],
+    r['Exchange rate'] ? num(r['Exchange rate']).toFixed(6) : '',
+    num(r['Currency conversion fee']).toFixed(2),
+    r.ID
+  ]);
+  const fmt = [,,,,,{align:'right'},{align:'right',fn:v=>`<span class="negative">${v}</span>`},,{align:'right'},{align:'right'}];
+  buildTable('divTable', headers, rows, fmt);
+
+  // Per-ticker
+  const byTk = {};
+  d.forEach(r => {
+    if (!r.Ticker) return;
+    if (!byTk[r.Ticker]) byTk[r.Ticker] = { name: r.Name, gross: 0, withheld: 0, net: 0, count: 0 };
+    const t = byTk[r.Ticker];
+    t.net += num(r.Total);
+    t.withheld += num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0;
+    t.count++;
+  });
+  let html = '<h3 style="margin-top:16px;">Per Ticker</h3>';
+  if (Object.keys(byTk).length === 0) {
+    html += '<p class="muted" style="padding:12px;">No dividends found. If you hold accumulating ETFs (e.g. VWCE, VUAA) this is expected.</p>';
+  } else {
+    html += '<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th class="text-right">Net €</th><th class="text-right">Withheld Tax €</th><th class="text-right">Gross €</th><th class="text-center"># Payments</th></tr></thead><tbody>';
+    Object.entries(byTk).forEach(([tk, t]) => {
+      html += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="text-right mono positive">${eur(t.net)}</td><td class="text-right mono negative">${eur(t.withheld)}</td><td class="text-right mono">${eur(t.net + t.withheld)}</td><td class="text-center">${t.count}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('divPerTickerSummary').innerHTML = html;
+
+  // Monthly
+  const byMonth = {};
+  d.forEach(r => {
+    const mk = monthKey(r.Time);
+    if (!byMonth[mk]) byMonth[mk] = { net: 0, withheld: 0 };
+    byMonth[mk].net += num(r.Total);
+    byMonth[mk].withheld += num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0;
+  });
+  let mHtml = '<h3 style="margin-top:16px;">Monthly Dividend Breakdown</h3>';
+  if (Object.keys(byMonth).length === 0) {
+    mHtml += '<p class="muted" style="padding:12px;">No dividends in selected period.</p>';
+  } else {
+    mHtml += '<div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Net €</th><th class="text-right">Withheld Tax €</th><th class="text-right">Gross €</th></tr></thead><tbody>';
+    Object.keys(byMonth).sort().forEach(mk => {
+      const m = byMonth[mk];
+      mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${eur(m.net)}</td><td class="text-right mono negative">${eur(m.withheld)}</td><td class="text-right mono">${eur(m.net + m.withheld)}</td></tr>`;
+    });
+    mHtml += '</tbody></table></div>';
+  }
+  document.getElementById('divMonthlySummary').innerHTML = mHtml;
+}
+
+function clearDivFilters() {
+  ['fDivFrom','fDivTo','fDivTicker','fDivMonth'].forEach(id => document.getElementById(id).value = '');
+  renderDividends();
+}
+
+// ── TRANSACTIONS (Card debits) ──
+function buildTransactions() {
+  const all = DATA.filter(r => r.Action === 'Card debit' || r.Action === 'New card cost');
+  const merchants = [...new Set(all.map(r => r['Merchant name']).filter(Boolean))].sort();
+  const categories = [...new Set(all.map(r => r['Merchant category']).filter(Boolean))].sort();
+  const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
+
+  document.getElementById('fTxMerchant').innerHTML = '<option value="">All</option>' + merchants.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('fTxCategory').innerHTML = '<option value="">All</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('fTxMonth').innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  renderTransactions();
+}
+
+function renderTransactions() {
+  let d = DATA.filter(r => r.Action === 'Card debit' || r.Action === 'New card cost');
+  const from = document.getElementById('fTxFrom').value;
+  const to = document.getElementById('fTxTo').value;
+  const merchant = document.getElementById('fTxMerchant').value;
+  const category = document.getElementById('fTxCategory').value;
+  const minAmt = num(document.getElementById('fTxMinAmt').value);
+  const maxAmt = document.getElementById('fTxMaxAmt').value ? num(document.getElementById('fTxMaxAmt').value) : Infinity;
+  const month = document.getElementById('fTxMonth').value;
+
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+  if (merchant) d = d.filter(r => r['Merchant name'] === merchant);
+  if (category) d = d.filter(r => r['Merchant category'] === category);
+  if (minAmt) d = d.filter(r => Math.abs(num(r.Total)) >= minAmt);
+  if (maxAmt < Infinity) d = d.filter(r => Math.abs(num(r.Total)) <= maxAmt);
+  if (month) d = d.filter(r => monthKey(r.Time) === month);
+
+  const totalSpent = d.reduce((s, r) => s + Math.abs(num(r.Total)), 0);
+  const avg = d.length ? totalSpent / d.length : 0;
+  const max = d.length ? Math.max(...d.map(r => Math.abs(num(r.Total)))) : 0;
+
+  makeCards('txCards', [
+    { label: 'Total Spending', value: eur(totalSpent), cls: 'negative', sub: `${d.length} charges` },
+    { label: 'Avg Charge', value: eur(avg) },
+    { label: 'Max Charge', value: eur(max) },
+  ]);
+
+  const headers = ['Date', 'Amount €', 'Merchant', 'Category', 'ID'];
+  const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r['Merchant name'] || r.Action, r['Merchant category'] || '—', r.ID]);
+  buildTable('txTable', headers, rows, [, { align: 'right', fn: v => `<span class="negative">${v}</span>` }]);
+
+  // By merchant
+  const byMerch = {};
+  d.forEach(r => {
+    const m = r['Merchant name'] || 'Other';
+    byMerch[m] = (byMerch[m] || 0) + Math.abs(num(r.Total));
+  });
+  let mHtml = '<h3 style="margin-top:16px;">By Merchant</h3><div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>';
+  Object.entries(byMerch).sort((a,b)=>b[1]-a[1]).forEach(([m, v]) => {
+    mHtml += `<tr><td>${m}</td><td class="text-right mono">${eur(v)}</td><td class="text-right mono">${pct(v/totalSpent)}</td></tr>`;
+  });
+  mHtml += '</tbody></table></div>';
+  document.getElementById('txMerchantSummary').innerHTML = mHtml;
+
+  // By category
+  const byCat = {};
+  d.forEach(r => {
+    const c = r['Merchant category'] || 'Other';
+    byCat[c] = (byCat[c] || 0) + Math.abs(num(r.Total));
+  });
+  let cHtml = '<h3 style="margin-top:16px;">By Category</h3><div class="table-wrap"><table><thead><tr><th>Category</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>';
+  Object.entries(byCat).sort((a,b)=>b[1]-a[1]).forEach(([c, v]) => {
+    cHtml += `<tr><td>${c}</td><td class="text-right mono">${eur(v)}</td><td class="text-right mono">${pct(v/totalSpent)}</td></tr>`;
+  });
+  cHtml += '</tbody></table></div>';
+  document.getElementById('txCategorySummary').innerHTML = cHtml;
+}
+
+function clearTxFilters() {
+  ['fTxFrom','fTxTo','fTxMerchant','fTxCategory','fTxMinAmt','fTxMaxAmt','fTxMonth'].forEach(id => document.getElementById(id).value = '');
+  renderTransactions();
+}
+
+// ── DEPOSITS ──
+function buildDeposits() { renderDeposits(); }
+function renderDeposits() {
+  let d = DATA.filter(r => r.Action === 'Deposit');
+  const from = document.getElementById('fDepFrom').value;
+  const to = document.getElementById('fDepTo').value;
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+
+  const total = d.reduce((s, r) => s + num(r.Total), 0);
+  const avg = d.length ? total / d.length : 0;
+
+  makeCards('depCards', [
+    { label: 'Σύνολο Καταθέσεων', value: eur(total), sub: `${d.length} deposits` },
+    { label: 'Avg Deposit', value: eur(avg) },
+  ]);
+
+  const headers = ['Date', 'Amount €', 'Notes', 'ID'];
+  const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.Notes, r.ID]);
+  buildTable('depTable', headers, rows, [, { align: 'right' }]);
+}
+
+function clearDepFilters() {
+  ['fDepFrom','fDepTo'].forEach(id => document.getElementById(id).value = '');
+  renderDeposits();
+}
+
+// ── CASHBACK ──
+function buildCashback() { renderCashback(); }
+function renderCashback() {
+  let d = DATA.filter(r => r.Action === 'Spending cashback');
+  const from = document.getElementById('fCbFrom').value;
+  const to = document.getElementById('fCbTo').value;
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+
+  const total = d.reduce((s, r) => s + num(r.Total), 0);
+
+  // Monthly
+  const byMonth = {};
+  d.forEach(r => {
+    const mk = monthKey(r.Time);
+    byMonth[mk] = (byMonth[mk] || 0) + num(r.Total);
+  });
+
+  makeCards('cbCards', [
+    { label: 'Total Cashback', value: eur(total), cls: 'positive', sub: `${d.length} records` },
+    { label: 'Avg / Month', value: eur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
+  ]);
+
+  const headers = ['Date', 'Amount €', 'ID'];
+  const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
+  buildTable('cbTable', headers, rows, [, { align: 'right' }]);
+}
+
+function clearCbFilters() {
+  ['fCbFrom','fCbTo'].forEach(id => document.getElementById(id).value = '');
+  renderCashback();
+}
+
+// ── RAW DATA ──
+function buildRaw() {
+  const actions = [...new Set(DATA.map(r => r.Action))].sort();
+  document.getElementById('fRawAction').innerHTML = '<option value="">All</option>' + actions.map(a => `<option value="${a}">${a}</option>`).join('');
+  renderRaw();
+}
+
+function renderRaw() {
+  let d = [...DATA];
+  const action = document.getElementById('fRawAction').value;
+  const from = document.getElementById('fRawFrom').value;
+  const to = document.getElementById('fRawTo').value;
+  const search = document.getElementById('fRawSearch').value.toLowerCase();
+
+  if (action) d = d.filter(r => r.Action === action);
+  if (from) d = d.filter(r => dateStr(r.Time) >= from);
+  if (to) d = d.filter(r => dateStr(r.Time) <= to);
+  if (search) d = d.filter(r => Object.values(r).some(v => v.toLowerCase().includes(search)));
+
+  const headers = ['Action','Date','Ticker','Name','ISIN','Shares','Τιμή','Exchange Rate','Result','Σύνολο','FX Fee','Merchant','Category'];
+  const rows = d.map(r => [
+    r.Action, r.Time, r.Ticker, r.Name, r.ISIN,
+    r['No. of shares'] ? num(r['No. of shares']).toFixed(6) : '',
+    r['Price / share'] ? num(r['Price / share']).toFixed(4) : '',
+    r['Exchange rate'] ? num(r['Exchange rate']).toFixed(6) : '',
+    r.Result ? num(r.Result).toFixed(2) : '',
+    r.Total ? num(r.Total).toFixed(2) : '',
+    r['Currency conversion fee'] ? num(r['Currency conversion fee']).toFixed(2) : '',
+    r['Merchant name'], r['Merchant category']
+  ]);
+  const fmt = [{fn: v => badge(v)},,,,,,{align:'right'},{align:'right'},{align:'right'},{align:'right'},{align:'right'}];
+  buildTable('rawTable', headers, rows, fmt);
+}
+
+function clearRawFilters() {
+  ['fRawAction','fRawFrom','fRawTo','fRawSearch'].forEach(id => document.getElementById(id).value = '');
+  renderRaw();
+}
+
+// ── Tab switching ──
+document.getElementById('mainTabs').addEventListener('click', e => {
+  if (!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('sec-' + e.target.dataset.tab).classList.add('active');
+});
+
+// ── Filter listeners ──
+function attachFilterListeners() {
+  // Stocks
+  ['fStockTicker','fStockAction','fStockFrom','fStockTo','fStockMinAmt','fStockMaxAmt','fStockISIN'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderStocks);
+    document.getElementById(id).addEventListener('change', renderStocks);
+  });
+  // Interest
+  ['fIntFrom','fIntTo','fIntMonth'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderInterest);
+    document.getElementById(id).addEventListener('change', renderInterest);
+  });
+  // Dividends
+  ['fDivFrom','fDivTo','fDivTicker','fDivMonth'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderDividends);
+    document.getElementById(id).addEventListener('change', renderDividends);
+  });
+  // Transactions
+  ['fTxFrom','fTxTo','fTxMerchant','fTxCategory','fTxMinAmt','fTxMaxAmt','fTxMonth'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderTransactions);
+    document.getElementById(id).addEventListener('change', renderTransactions);
+  });
+  // Deposits
+  ['fDepFrom','fDepTo'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderDeposits);
+    document.getElementById(id).addEventListener('change', renderDeposits);
+  });
+  // Cashback
+  ['fCbFrom','fCbTo'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderCashback);
+    document.getElementById(id).addEventListener('change', renderCashback);
+  });
+  // Raw
+  ['fRawAction','fRawFrom','fRawTo','fRawSearch'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderRaw);
+    document.getElementById(id).addEventListener('change', renderRaw);
+  });
+}
+
+// ── File handling ──
+const fileInput = document.getElementById('fileInput');
+const uploadZone = document.getElementById('uploadZone');
+
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) readFile(e.target.files[0]);
+});
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+});
+
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => loadCSV(e.target.result);
+  reader.readAsText(file);
+}
+
+// Auto-load if pre-loaded
+</script>
+</body>
+</html>
