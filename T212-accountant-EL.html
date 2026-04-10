@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="el">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trading 212 — Λογιστικό Εργαλείο</title>
+<title>Trading 212 — Accounting Tool</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
 
@@ -182,12 +182,12 @@ tr:hover td { background:rgba(79,140,255,.03); }
 <body>
 <div class="app">
   <div class="header">
-    <h1>📊 Trading 212 <span>Λογιστικό Εργαλείο</span></h1>
+    <h1>📊 Trading 212 <span>Accounting Tool</span></h1>
     <div style="display:flex;gap:8px;align-items:center;">
       <span class="muted" style="font-size:13px;" id="fileInfo"></span>
-      <button class="btn" onclick="try{localStorage.removeItem('t212_csv');localStorage.removeItem('t212_csv_name');}catch(e){}location.reload()" title="Εκκαθάριση αποθηκευμένου CSV">Εκκαθάριση</button>
-      <button class="btn" id="addCsvBtn" onclick="document.getElementById('mergeInput').click()" style="display:none" title="Συγχώνευση άλλου CSV αρχείου">Προσθήκη CSV</button>
-      <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Φόρτωση CSV</button>
+      <button class="btn" onclick="try{localStorage.removeItem('t212_csv');localStorage.removeItem('t212_csv_name');}catch(e){}location.reload()" title="Clear cached CSV">Clear</button>
+      <button class="btn" id="addCsvBtn" onclick="document.getElementById('mergeInput').click()" style="display:none" title="Merge another CSV export">Add CSV</button>
+      <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Load CSV</button>
       <input type="file" id="fileInput" accept=".csv" style="display:none">
       <input type="file" id="mergeInput" accept=".csv" style="display:none">
     </div>
@@ -195,22 +195,22 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
   <div id="uploadZone" class="upload-zone">
     <div class="icon">📁</div>
-    <p>Σύρετε ένα Trading 212 CSV αρχείο εδώ ή κάντε κλικ για επιλογή</p>
-    <p style="font-size:12px;margin-top:4px;">Υποστηρίζει: αγορές/πωλήσεις Market/Limit, μερίσματα, τόκους, χρεώσεις κάρτας, καταθέσεις και επιστροφή χρημάτων</p>
+    <p>Drag a Trading 212 CSV file here or click to select</p>
+    <p style="font-size:12px;margin-top:4px;">Supports: Market/Limit buy &amp; sell, Dividends, Interest, Card debit, Deposits, Cashback</p>
   </div>
 
   <div id="mainContent" class="hidden">
     <div class="tabs" id="mainTabs">
-      <button class="tab active" data-tab="overview">Επισκόπηση</button>
-      <button class="tab" data-tab="stocks">Μετοχές / ETFs</button>
-      <button class="tab" data-tab="interest">Τόκοι</button>
-      <button class="tab" data-tab="dividends">Μερίσματα</button>
-      <button class="tab" data-tab="transactions">Κινήσεις Κάρτας</button>
-      <button class="tab" data-tab="deposits">Καταθέσεις</button>
-      <button class="tab" data-tab="cashback">Επιστροφή</button>
-      <button class="tab" data-tab="raw">Όλα τα Δεδομένα</button>
-      <button class="tab" data-tab="charts">Γραφήματα</button>
-      <button class="tab" data-tab="tax">Φόρος</button>
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="stocks">Stocks / ETFs</button>
+      <button class="tab" data-tab="interest">Interest</button>
+      <button class="tab" data-tab="dividends">Dividends</button>
+      <button class="tab" data-tab="transactions">Card Transactions</button>
+      <button class="tab" data-tab="deposits">Deposits</button>
+      <button class="tab" data-tab="cashback">Cashback</button>
+      <button class="tab" data-tab="raw">All Data</button>
+      <button class="tab" data-tab="charts">Charts</button>
+      <button class="tab" data-tab="tax">Tax</button>
     </div>
 
     <!-- OVERVIEW -->
@@ -224,44 +224,44 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- STOCKS -->
     <div class="section" id="sec-stocks">
-      <div class="section-title">📈 Συναλλαγές Μετοχών / ETFs</div>
+      <div class="section-title">📈 Stock / ETF Trades</div>
       <div class="filters" id="stockFilters">
         <div class="filter-group">
           <label>Ticker</label>
-          <select id="fStockTicker"><option value="">Όλα</option></select>
+          <select id="fStockTicker"><option value="">All</option></select>
         </div>
         <div class="filter-group">
-          <label>Ενέργεια</label>
+          <label>Action</label>
           <select id="fStockAction">
-            <option value="">Όλα</option>
-            <option value="Market buy">Αγορά</option>
-            <option value="Limit buy">Αγορά (Limit)</option>
-            <option value="Market sell">Πώληση</option>
-            <option value="Limit sell">Πώληση (Limit)</option>
+            <option value="">All</option>
+            <option value="Market buy">Buy</option>
+            <option value="Limit buy">Limit Buy</option>
+            <option value="Market sell">Sell</option>
+            <option value="Limit sell">Limit Sell</option>
           </select>
         </div>
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fStockFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fStockTo">
         </div>
         <div class="filter-group">
-          <label>Ελάχ. Ποσό €</label>
+          <label>Min Amount €</label>
           <input type="number" id="fStockMinAmt" step="0.01" placeholder="0">
         </div>
         <div class="filter-group">
-          <label>Μέγ. Ποσό €</label>
+          <label>Max Amount €</label>
           <input type="number" id="fStockMaxAmt" step="0.01" placeholder="∞">
         </div>
         <div class="filter-group">
           <label>ISIN</label>
-          <input type="text" id="fStockISIN" placeholder="π.χ. IE00B...">
+          <input type="text" id="fStockISIN" placeholder="e.g. IE00B...">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearStockFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearStockFilters()">Clear</button>
         </div>
       </div>
       <div class="cards" id="stockCards"></div>
@@ -278,22 +278,22 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- INTEREST -->
     <div class="section" id="sec-interest">
-      <div class="section-title">🏦 Τόκοι</div>
+      <div class="section-title">🏦 Interest</div>
       <div class="filters" id="interestFilters">
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fIntFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fIntTo">
         </div>
         <div class="filter-group">
-          <label>Μήνας</label>
-          <select id="fIntMonth"><option value="">Όλα</option></select>
+          <label>Month</label>
+          <select id="fIntMonth"><option value="">All</option></select>
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearIntFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearIntFilters()">Clear</button>
         </div>
       </div>
       <div class="cards" id="interestCards"></div>
@@ -309,26 +309,26 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- DIVIDENDS -->
     <div class="section" id="sec-dividends">
-      <div class="section-title">💵 Μερίσματα</div>
+      <div class="section-title">💵 Dividends</div>
       <div class="filters">
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fDivFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fDivTo">
         </div>
         <div class="filter-group">
           <label>Ticker</label>
-          <select id="fDivTicker"><option value="">Όλα</option></select>
+          <select id="fDivTicker"><option value="">All</option></select>
         </div>
         <div class="filter-group">
-          <label>Μήνας</label>
-          <select id="fDivMonth"><option value="">Όλα</option></select>
+          <label>Month</label>
+          <select id="fDivMonth"><option value="">All</option></select>
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearDivFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearDivFilters()">Clear</button>
         </div>
       </div>
       <div class="cards" id="divCards"></div>
@@ -346,38 +346,38 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- TRANSACTIONS (Card debits) -->
     <div class="section" id="sec-transactions">
-      <div class="section-title">💳 Κινήσεις Κάρτας</div>
+      <div class="section-title">💳 Card Transactions</div>
       <div class="filters" id="txFilters">
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fTxFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fTxTo">
         </div>
         <div class="filter-group">
-          <label>Έμπορος</label>
-          <select id="fTxMerchant"><option value="">Όλα</option></select>
+          <label>Merchant</label>
+          <select id="fTxMerchant"><option value="">All</option></select>
         </div>
         <div class="filter-group">
-          <label>Κατηγορία</label>
-          <select id="fTxCategory"><option value="">Όλα</option></select>
+          <label>Category</label>
+          <select id="fTxCategory"><option value="">All</option></select>
         </div>
         <div class="filter-group">
-          <label>Ελάχ. Ποσό €</label>
+          <label>Min Amount €</label>
           <input type="number" id="fTxMinAmt" step="0.01" placeholder="0">
         </div>
         <div class="filter-group">
-          <label>Μέγ. Ποσό €</label>
+          <label>Max Amount €</label>
           <input type="number" id="fTxMaxAmt" step="0.01" placeholder="∞">
         </div>
         <div class="filter-group">
-          <label>Μήνας</label>
-          <select id="fTxMonth"><option value="">Όλα</option></select>
+          <label>Month</label>
+          <select id="fTxMonth"><option value="">All</option></select>
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearTxFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearTxFilters()">Clear</button>
         </div>
       </div>
       <div class="cards" id="txCards"></div>
@@ -401,18 +401,18 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- DEPOSITS -->
     <div class="section" id="sec-deposits">
-      <div class="section-title">💰 Καταθέσεις</div>
+      <div class="section-title">💰 Deposits</div>
       <div class="filters">
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fDepFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fDepTo">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearDepFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearDepFilters()">Clear</button>
         </div>
       </div>
       <div class="cards" id="depCards"></div>
@@ -427,18 +427,18 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- CASHBACK -->
     <div class="section" id="sec-cashback">
-      <div class="section-title">🎁 Επιστροφή Χρημάτων</div>
+      <div class="section-title">🎁 Spending Cashback</div>
       <div class="filters">
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fCbFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fCbTo">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearCbFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearCbFilters()">Clear</button>
         </div>
       </div>
       <div class="cards" id="cbCards"></div>
@@ -453,26 +453,26 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- RAW -->
     <div class="section" id="sec-raw">
-      <div class="section-title">📋 Όλα τα Δεδομένα</div>
+      <div class="section-title">📋 All Data</div>
       <div class="filters">
         <div class="filter-group">
-          <label>Τύπος</label>
-          <select id="fRawAction"><option value="">Όλα</option></select>
+          <label>Type</label>
+          <select id="fRawAction"><option value="">All</option></select>
         </div>
         <div class="filter-group">
-          <label>Από</label>
+          <label>From</label>
           <input type="date" id="fRawFrom">
         </div>
         <div class="filter-group">
-          <label>Έως</label>
+          <label>To</label>
           <input type="date" id="fRawTo">
         </div>
         <div class="filter-group">
-          <label>Αναζήτηση</label>
-          <input type="text" id="fRawSearch" placeholder="ελεύθερο κείμενο...">
+          <label>Search</label>
+          <input type="text" id="fRawSearch" placeholder="free text...">
         </div>
         <div class="filter-group" style="align-self:end;">
-          <button class="btn" onclick="clearRawFilters()">Καθαρισμός</button>
+          <button class="btn" onclick="clearRawFilters()">Clear</button>
         </div>
       </div>
       <div class="export-bar">
@@ -485,15 +485,15 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
     <!-- CHARTS -->
     <div class="section" id="sec-charts">
-      <div class="section-title">📊 Γραφήματα</div>
-      <div class="chart-wrap"><div class="chart-title">Μηνιαία Επισκόπηση — Καταθέσεις έναντι Καθαρής Επένδυσης και Δαπανών</div><div id="chartMonthly"></div></div>
-      <div class="chart-wrap"><div class="chart-title">Σωρευτικές Καταθέσεις vs Καθαρή Επένδυση</div><div id="chartCumulative"></div></div>
-      <div class="chart-wrap"><div class="chart-title">DCA — Μέση Τιμή Αγοράς ανά Μήνα</div><div id="chartDCA"></div></div>
+      <div class="section-title">📊 Charts</div>
+      <div class="chart-wrap"><div class="chart-title">Monthly Overview — Deposits vs Net Invested vs Spending</div><div id="chartMonthly"></div></div>
+      <div class="chart-wrap"><div class="chart-title">Cumulative Deposits vs Net Invested</div><div id="chartCumulative"></div></div>
+      <div class="chart-wrap"><div class="chart-title">DCA — Avg Buy Price per Month</div><div id="chartDCA"></div></div>
     </div>
 
     <!-- TAX -->
     <div class="section" id="sec-tax">
-      <div class="section-title">🧾 Φορολογική Σύνοψη</div>
+      <div class="section-title">🧾 Tax Summary</div>
       <div id="taxContent"></div>
     </div>
   </div>
@@ -544,7 +544,7 @@ function loadCSV(text, filename, persist = true) {
   document.getElementById('uploadZone').classList.add('hidden');
   document.getElementById('mainContent').classList.remove('hidden');
   document.getElementById('addCsvBtn').style.display = '';
-  const label = (filename ? filename + ' — ' : '') + DATA.length + ' εγγραφές';
+  const label = (filename ? filename + ' — ' : '') + DATA.length + ' records';
   document.getElementById('fileInfo').textContent = label;
   if (persist) try { localStorage.setItem('t212_csv', text); if (filename) localStorage.setItem('t212_csv_name', filename); } catch(e) {}
   buildAll();
@@ -553,7 +553,7 @@ function loadCSV(text, filename, persist = true) {
 // ── Helpers ──
 const num = v => parseFloat(v) || 0;
 let CURRENCY = 'EUR';
-let LOCALE = 'el-GR';
+let LOCALE = 'en-IE';
 const cur = v => v.toLocaleString(LOCALE, { style:'currency', currency:CURRENCY, minimumFractionDigits:2 });
 const cur4 = v => v.toLocaleString(LOCALE, { minimumFractionDigits:4, maximumFractionDigits:4 }) + ' ' + CURRENCY;
 
@@ -575,7 +575,7 @@ const dateStr = d => d ? d.split(' ')[0] : '';
 const monthKey = d => d ? d.substring(0, 7) : '';
 const monthLabel = k => {
   const [y, m] = k.split('-');
-  const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοέ','Δεκ'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return months[parseInt(m)-1] + ' ' + y;
 };
 
@@ -588,35 +588,20 @@ function getFiltered(data, fromId, toId) {
   return d;
 }
 
-function actionLabel(action) {
-  const map = {
-    'Market buy': 'Αγορά',
-    'Limit buy': 'Αγορά',
-    'Market sell': 'Πώληση',
-    'Limit sell': 'Πώληση',
-    'Deposit': 'Κατάθεση',
-    'Interest on cash': 'Τόκος',
-    'Card debit': 'Κάρτα',
-    'Spending cashback': 'Επιστροφή',
-    'New card cost': 'Χρέωση Κάρτας',
-  };
-  return map[action] || (action && action.toLowerCase().startsWith('dividend') ? 'Μέρισμα' : action);
-}
-
 function badge(action) {
   const map = {
-    'Market buy': 'badge-buy',
-    'Limit buy': 'badge-buy',
-    'Market sell': 'badge-sell',
-    'Limit sell': 'badge-sell',
-    'Deposit': 'badge-dep',
-    'Interest on cash': 'badge-int',
-    'Card debit': 'badge-card',
-    'Spending cashback': 'badge-cash',
-    'New card cost': 'badge-other',
+    'Market buy': ['badge-buy','Buy'],
+    'Limit buy':  ['badge-buy','Buy'],
+    'Market sell': ['badge-sell','Sell'],
+    'Limit sell':  ['badge-sell','Sell'],
+    'Deposit': ['badge-dep','Deposit'],
+    'Interest on cash': ['badge-int','Interest'],
+    'Card debit': ['badge-card','Card'],
+    'Spending cashback': ['badge-cash','Cashback'],
+    'New card cost': ['badge-other','Card Fee'],
   };
-  const cls = map[action] || (action && action.toLowerCase().startsWith('dividend') ? 'badge-int' : 'badge-other');
-  return `<span class="badge ${cls}">${actionLabel(action)}</span>`;
+  const [cls, label] = map[action] || (action && action.toLowerCase().startsWith('dividend') ? ['badge-int','Dividend'] : ['badge-other', action]);
+  return `<span class="badge ${cls}">${label}</span>`;
 }
 
 // ── Card builder ──
@@ -726,19 +711,19 @@ function buildOverview() {
   const netCashFlow = totalDeposited - totalSpent;
 
   makeCards('overviewCards', [
-    { label: 'Σύνολο Αγορών', value: cur(totalBought), sub: `${buys.length} συναλλαγές` },
-    { label: 'Σύνολο Πωλήσεων', value: cur(totalSold), sub: `${sells.length} συναλλαγές` },
-    { label: 'Κέρδος/Ζημία', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative', sub: 'Από πωλήσεις' },
-    { label: 'Μερίσματα (Καθαρά)', value: cur(totalDividends), cls: totalDividends > 0 ? 'positive' : '', sub: totalDivTax > 0 ? `Παρακράτηση: ${cur(totalDivTax)}` : `${dividends.length} εγγραφές` },
-    { label: 'Σύνολο Τόκων', value: cur(totalInterest), cls: 'positive', sub: `${interest.length} εγγραφές` },
-    { label: 'Καταθέσεις', value: cur(totalDeposited), sub: `${deposits.length} καταθέσεις` },
-    { label: 'Δαπάνες Κάρτας', value: cur(totalSpent), cls: 'negative', sub: `${cardDebits.length} χρεώσεις` },
-    { label: 'Επιστροφή', value: cur(totalCashback), cls: 'positive', sub: `${cashback.length} εγγραφές` },
-    { label: 'Προμήθειες FX', value: cur(totalFees), cls: totalFees > 0 ? 'negative' : '', sub: 'Μετατροπή νομίσματος' },
-    { label: 'Κόστος Κάρτας', value: cur(totalNewCard), sub: newCard.length ? 'Χρέωση νέας κάρτας' : '—' },
-    { label: 'Ποσοστό Αποταμίευσης', value: savingsRate.toFixed(1) + '%', cls: savingsRate >= 50 ? 'positive' : 'neutral', sub: 'Καθαρά / Κατατεθέντα' },
-    { label: 'Καθαρή Ροή', value: cur(netCashFlow), cls: netCashFlow >= 0 ? 'positive' : 'negative', sub: 'Καταθέσεις − Δαπάνες κάρτας' },
-    { label: 'Επίδραση FX', value: totalBought > 0 ? (totalFees / totalBought * 100).toFixed(3) + '%' : '0%', cls: totalFees > 0 ? 'negative' : '', sub: 'Προμήθειες FX / συνολική επένδυση' },
+    { label: 'Total Bought', value: cur(totalBought), sub: `${buys.length} trades` },
+    { label: 'Total Sold', value: cur(totalSold), sub: `${sells.length} trades` },
+    { label: 'Profit/Loss (Result)', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative', sub: 'From sells' },
+    { label: 'Dividends (Net)', value: cur(totalDividends), cls: totalDividends > 0 ? 'positive' : '', sub: totalDivTax > 0 ? `Withheld: ${cur(totalDivTax)}` : `${dividends.length} records` },
+    { label: 'Total Interest', value: cur(totalInterest), cls: 'positive', sub: `${interest.length} records` },
+    { label: 'Deposits', value: cur(totalDeposited), sub: `${deposits.length} deposits` },
+    { label: 'Card Spending', value: cur(totalSpent), cls: 'negative', sub: `${cardDebits.length} charges` },
+    { label: 'Cashback', value: cur(totalCashback), cls: 'positive', sub: `${cashback.length} records` },
+    { label: 'FX Fees', value: cur(totalFees), cls: totalFees > 0 ? 'negative' : '', sub: 'Currency conversion' },
+    { label: 'Card Cost', value: cur(totalNewCard), sub: newCard.length ? 'New card charge' : '—' },
+    { label: 'Savings Rate', value: savingsRate.toFixed(1) + '%', cls: savingsRate >= 50 ? 'positive' : 'neutral', sub: 'Net held / Deposited' },
+    { label: 'Net Cash Flow', value: cur(netCashFlow), cls: netCashFlow >= 0 ? 'positive' : 'negative', sub: 'Deposits − Card spending' },
+    { label: 'FX Drag', value: totalBought > 0 ? (totalFees / totalBought * 100).toFixed(3) + '%' : '0%', cls: totalFees > 0 ? 'negative' : '', sub: 'FX fees / total invested' },
   ]);
 
   buildPortfolioSnapshot();
@@ -755,7 +740,7 @@ function buildOverview() {
     t.fees += num(r['Currency conversion fee']);
   });
 
-  let tickerHtml = '<h3>Ανά Ticker</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Όνομα</th><th>ISIN</th><th class="text-right">Αγορές €</th><th class="text-right">% Χαρτοφυλακίου</th><th class="text-right">Πωλήσεις €</th><th class="text-right">Μετοχές</th><th class="text-right">Αγορ. Μετοχές</th><th class="text-right">Πωλ. Μετοχές</th><th class="text-right">Κέρδος/Ζημία</th><th class="text-right">Προμ. FX</th><th class="text-center"># Αγορές</th><th class="text-center"># Πωλήσεις</th></tr></thead><tbody>';
+  let tickerHtml = '<h3>Per Ticker</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th>ISIN</th><th class="text-right">Bought €</th><th class="text-right">% of Portfolio</th><th class="text-right">Sold €</th><th class="text-right">Shares Held</th><th class="text-right">Shares Bought</th><th class="text-right">Shares Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">FX Fees</th><th class="text-center"># Buys</th><th class="text-center"># Sells</th></tr></thead><tbody>';
   Object.entries(tickers).forEach(([tk, t]) => {
     const allocPct = totalBought > 0 ? (t.bought / totalBought * 100).toFixed(1) + '%' : '0%';
     const sharesHeld = (t.shares_bought - t.shares_sold).toFixed(4);
@@ -781,7 +766,7 @@ function buildOverview() {
     m.fees += num(r['Currency conversion fee']);
   });
 
-  let mHtml = '<h3>Μηνιαία Ανάλυση</h3><div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Καταθέσεις</th><th class="text-right">Αγορές</th><th class="text-right">Πωλήσεις</th><th class="text-right">Κέρδος/Ζημία</th><th class="text-right">Μερίσματα</th><th class="text-right">Παρακρ. Φόρος</th><th class="text-right">Τόκοι</th><th class="text-right">Δαπάνες</th><th class="text-right">Μεταβ. Δαπανών Μ/Μ</th><th class="text-right">Καθαρή Ροή</th><th class="text-right">Ποσ. Αποταμ.</th><th class="text-right">Επιστροφή</th><th class="text-right">Προμ. FX</th></tr></thead><tbody>';
+  let mHtml = '<h3>Monthly Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Deposits</th><th class="text-right">Bought</th><th class="text-right">Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">Dividends</th><th class="text-right">Withheld Tax</th><th class="text-right">Interest</th><th class="text-right">Spending</th><th class="text-right">MoM Spending Δ</th><th class="text-right">Net Flow</th><th class="text-right">Savings Rate</th><th class="text-right">Cashback</th><th class="text-right">FX Fees</th></tr></thead><tbody>';
   let prevMonthSpent = null;
   Object.keys(months).sort().forEach(mk => {
     const m = months[mk];
@@ -829,13 +814,13 @@ function buildPortfolioSnapshot() {
   const totalUnreal = totalEst - totalCost;
 
   const lastDate = rows.length ? rows.map(r => r[5]).sort().at(-1) : '—';
-  let html = `<h3>Στιγμιότυπο Χαρτοφυλακίου <span style="font-size:12px;font-weight:400;color:var(--text2);">(εκτ. βάσει τελευταίας τιμής αγοράς — όχι πραγματικός χρόνος)</span></h3>`;
+  let html = `<h3>Portfolio Snapshot <span style="font-size:12px;font-weight:400;color:var(--text2);">(est. as of last buy price — not real-time)</span></h3>`;
   html += `<div class="cards" style="margin-bottom:12px;">`;
-  html += `<div class="card"><div class="label">Εκτ. Συνολική Αξία</div><div class="value mono">${cur(totalEst)}</div><div class="sub">Τελευταία τιμή: ${lastDate}</div></div>`;
-  html += `<div class="card"><div class="label">Συνολικό Κόστος Βάσης</div><div class="value mono">${cur(totalCost)}</div></div>`;
-  html += `<div class="card"><div class="label">Μη Πραγματοποιηθέν Κ/Ζ</div><div class="value mono ${totalUnreal >= 0 ? 'positive' : 'negative'}">${cur(totalUnreal)}</div><div class="sub">${totalCost > 0 ? (totalUnreal / totalCost * 100).toFixed(2) + '%' : '—'}</div></div>`;
+  html += `<div class="card"><div class="label">Est. Total Value</div><div class="value mono">${cur(totalEst)}</div><div class="sub">Last price: ${lastDate}</div></div>`;
+  html += `<div class="card"><div class="label">Total Cost Basis</div><div class="value mono">${cur(totalCost)}</div></div>`;
+  html += `<div class="card"><div class="label">Unrealised P&L</div><div class="value mono ${totalUnreal >= 0 ? 'positive' : 'negative'}">${cur(totalUnreal)}</div><div class="sub">${totalCost > 0 ? (totalUnreal / totalCost * 100).toFixed(2) + '%' : '—'}</div></div>`;
   html += `</div>`;
-  html += `<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Όνομα</th><th class="text-right">Μετοχές</th><th class="text-right">Κόστος Βάσης</th><th class="text-right">Τελ. Τιμή</th><th>Τελ. Αγορά</th><th class="text-right">Εκτ. Αξία</th><th class="text-right">Μη Πραγμ. Κ/Ζ</th></tr></thead><tbody>`;
+  html += `<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th class="text-right">Shares Held</th><th class="text-right">Cost Basis</th><th class="text-right">Last Price</th><th>Last Buy Date</th><th class="text-right">Est. Value</th><th class="text-right">Unrealised P&L</th></tr></thead><tbody>`;
   rows.forEach(([tk, name, held, cb, lp, lpd, est, unreal, cls]) => {
     html += `<tr><td><strong>${tk}</strong></td><td>${name}</td><td class="text-right mono">${held}</td><td class="text-right mono">${cb}</td><td class="text-right mono">${lp}</td><td>${lpd}</td><td class="text-right mono">${est}</td><td class="text-right mono ${cls}">${cur(unreal)}</td></tr>`;
   });
@@ -861,12 +846,12 @@ function buildDepositInsights() {
   });
   const avgLag = lags.length ? lags.reduce((s, v) => s + v, 0) / lags.length : 0;
   const medLag = lags.length ? [...lags].sort((a, b) => a - b)[Math.floor(lags.length / 2)] : 0;
-  const fmtLag = h => h < 1 ? `${Math.round(h * 60)} λ.` : h < 24 ? `${h.toFixed(1)} ώ.` : `${(h / 24).toFixed(1)} ημ.`;
+  const fmtLag = h => h < 1 ? `${Math.round(h * 60)}m` : h < 24 ? `${h.toFixed(1)}h` : `${(h / 24).toFixed(1)}d`;
 
-  let html = '<h3>Στοιχεία Καταθέσεων</h3><div class="cards">';
-  html += `<div class="card"><div class="label">Ελεύθερα Μετρητά (εκτ.)</div><div class="value mono ${freeCash >= 0 ? 'positive' : 'negative'}">${cur(freeCash)}</div><div class="sub">Κατατεθέντα − επενδεδυμένα − δαπανηθέντα</div></div>`;
-  html += `<div class="card"><div class="label">Μέσος Χρόνος Τοποθέτησης</div><div class="value mono">${lags.length ? fmtLag(avgLag) : '—'}</div><div class="sub">Κατάθεση → επόμενη αγορά (μέσος)</div></div>`;
-  html += `<div class="card"><div class="label">Διάμεσος Χρόνος Τοποθέτησης</div><div class="value mono">${lags.length ? fmtLag(medLag) : '—'}</div><div class="sub">Κατάθεση → επόμενη αγορά (διάμεσος)</div></div>`;
+  let html = '<h3>Deposit Insights</h3><div class="cards">';
+  html += `<div class="card"><div class="label">Free Cash (est.)</div><div class="value mono ${freeCash >= 0 ? 'positive' : 'negative'}">${cur(freeCash)}</div><div class="sub">Deposited − invested − spent</div></div>`;
+  html += `<div class="card"><div class="label">Avg Deploy Time</div><div class="value mono">${lags.length ? fmtLag(avgLag) : '—'}</div><div class="sub">Deposit → next buy (avg)</div></div>`;
+  html += `<div class="card"><div class="label">Median Deploy Time</div><div class="value mono">${lags.length ? fmtLag(medLag) : '—'}</div><div class="sub">Deposit → next buy (median)</div></div>`;
   html += '</div>';
   document.getElementById('depositLagSummary').innerHTML = html;
 }
@@ -877,7 +862,7 @@ function buildStocks() {
   // Populate ticker filter
   const tickers = [...new Set(allStocks.map(r => r.Ticker).filter(Boolean))].sort();
   const sel = document.getElementById('fStockTicker');
-  sel.innerHTML = '<option value="">Όλα</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
+  sel.innerHTML = '<option value="">All</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
   renderStocks();
 }
 
@@ -910,15 +895,15 @@ function renderStocks() {
   const totalFees = d.reduce((s, r) => s + num(r['Currency conversion fee']), 0);
 
   makeCards('stockCards', [
-    { label: 'Αγορές (φιλτραρισμένες)', value: cur(totalBought), sub: `${buys.length} συναλλαγές` },
-    { label: 'Πωλήσεις (φιλτραρισμένες)', value: cur(totalSold), sub: `${sells.length} συναλλαγές` },
-    { label: 'Κέρδος/Ζημία', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative' },
-    { label: 'Υπόλοιπο Μετοχών', value: totalShares.toFixed(6), sub: 'Αγορές - Πωλήσεις' },
-    { label: 'Μέση Τιμή Αγοράς', value: cur4(avgBuyPrice) },
-    { label: 'Προμήθειες FX', value: cur(totalFees) },
+    { label: 'Bought (filtered)', value: cur(totalBought), sub: `${buys.length} trades` },
+    { label: 'Sold (filtered)', value: cur(totalSold), sub: `${sells.length} trades` },
+    { label: 'Profit/Loss', value: cur(totalResult), cls: totalResult >= 0 ? 'positive' : 'negative' },
+    { label: 'Shares Balance', value: totalShares.toFixed(6), sub: 'Buys - Sells' },
+    { label: 'Avg Buy Price', value: cur4(avgBuyPrice) },
+    { label: 'FX Fees', value: cur(totalFees) },
   ]);
 
-  const headers = ['Ημ/νία','Ενέργεια','Ticker','Όνομα','ISIN','Μετοχές','Τιμή/Μετοχή','Νόμισμα','Ισοτιμία','Αποτέλεσμα','Σύνολο €','Προμ. FX'];
+  const headers = ['Date','Action','Ticker','Name','ISIN','Shares','Price/Share','Currency','Exchange Rate','Result','Total €','FX Fee'];
   const rows = d.map(r => [
     r.Time, r.Action, r.Ticker, r.Name, r.ISIN,
     num(r['No. of shares']).toFixed(6),
@@ -942,11 +927,11 @@ function renderStocks() {
     else { t.sold += num(r.Total); t.sS += num(r['No. of shares']); t.result += num(r.Result); }
     t.fees += num(r['Currency conversion fee']);
   });
-  let html = '<h3>Σύνοψη ανά Ticker (φιλτραρισμένη)</h3><div class="cards">';
+  let html = '<h3>Per Ticker Summary (filtered)</h3><div class="cards">';
   Object.entries(byTk).forEach(([tk, t]) => {
     const costBasis = t.sB > 0 ? t.bought / t.sB : 0;
     const sharesHeld = (t.sB - t.sS).toFixed(4);
-    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Αγορές: ${cur(t.bought)} (${t.sB.toFixed(4)} μτχ)</div><div class="sub">Πωλήσεις: ${cur(t.sold)} (${t.sS.toFixed(4)} μτχ)</div><div class="sub">Κατοχή: ${sharesHeld} μτχ</div><div class="sub">Κόστος Βάσης: <span class="mono">${cur4(costBasis)}</span></div><div class="sub">Κ/Ζ: <span class="${t.result>=0?'positive':'negative'}">${cur(t.result)}</span></div><div class="sub">Προμ. FX: ${cur(t.fees)}</div></div>`;
+    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Bought: ${cur(t.bought)} (${t.sB.toFixed(4)} shr)</div><div class="sub">Sold: ${cur(t.sold)} (${t.sS.toFixed(4)} shr)</div><div class="sub">Held: ${sharesHeld} shr</div><div class="sub">Cost Basis: <span class="mono">${cur4(costBasis)}</span></div><div class="sub">P&L: <span class="${t.result>=0?'positive':'negative'}">${cur(t.result)}</span></div><div class="sub">FX: ${cur(t.fees)}</div></div>`;
   });
   html += '</div>';
   document.getElementById('stockPerTickerSummary').innerHTML = html;
@@ -956,7 +941,7 @@ function renderStocks() {
     .filter(([, t]) => t.bought > 0)
     .sort((a, b) => b[1].bought - a[1].bought)
     .map(([tk, t]) => ({ label: tk, value: t.bought, pct: totalBought > 0 ? (t.bought / totalBought * 100).toFixed(1) + '%' : '', color: 'var(--accent)' }));
-  document.getElementById('stockAllocChart').innerHTML = svgHBar(allocItems, { title: 'Επένδυση ανά Ticker', color: 'var(--accent)' });
+  document.getElementById('stockAllocChart').innerHTML = svgHBar(allocItems, { title: 'Invested by Ticker', color: 'var(--accent)' });
 
   // ── DCA Stats ──
   const allBuys = DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Limit buy');
@@ -972,12 +957,12 @@ let dcaPeriod = 'week';
 let dcaMode = 'gross';
 
 const DCA_PERIODS = [
-  { id:'day',     label:'Ημερήσια',   avgLabel:'Ημέρα',    unit:'ημέρες',    short:' ημ.' },
-  { id:'week',    label:'Εβδομαδιαία', avgLabel:'Εβδομάδα', unit:'εβδομάδες', short:' εβδ.' },
-  { id:'month',   label:'Μηνιαία',    avgLabel:'Μήνα',     unit:'μήνες',     short:' μήν.' },
-  { id:'quarter', label:'Τριμηνιαία', avgLabel:'Τρίμηνο',  unit:'τρίμηνα',   short:' τρ.' },
-  { id:'half',    label:'Εξαμηνιαία', avgLabel:'Εξάμηνο',  unit:'εξάμηνα',   short:' εξ.' },
-  { id:'year',    label:'Ετήσια',     avgLabel:'Έτος',     unit:'έτη',       short:' έτ.' },
+  { id:'day',     label:'Daily',     avgLabel:'Day',      unit:'days',       short:'d'  },
+  { id:'week',    label:'Weekly',    avgLabel:'Week',     unit:'weeks',      short:'w'  },
+  { id:'month',   label:'Monthly',   avgLabel:'Month',    unit:'months',     short:'mo' },
+  { id:'quarter', label:'Quarterly', avgLabel:'Quarter',  unit:'quarters',   short:'q'  },
+  { id:'half',    label:'Half-Year', avgLabel:'Half Yr',  unit:'half-years', short:'hy' },
+  { id:'year',    label:'Yearly',    avgLabel:'Year',     unit:'years',      short:'yr' },
 ];
 
 function dcaPeriodKey(dateStr, period) {
@@ -1060,24 +1045,24 @@ function renderDCASummary() {
   ).join('');
 
   const modePills =
-    `<button onclick="dcaMode='gross';renderDCASummary()" style="${pillStyle(dcaMode==='gross')}">Μεικτά</button>` +
-    `<button onclick="dcaMode='net';renderDCASummary()" style="${pillStyle(dcaMode==='net')}">Καθαρά</button>`;
+    `<button onclick="dcaMode='gross';renderDCASummary()" style="${pillStyle(dcaMode==='gross')}">Gross</button>` +
+    `<button onclick="dcaMode='net';renderDCASummary()" style="${pillStyle(dcaMode==='net')}">Net</button>`;
 
   const modeNote = dcaMode === 'net'
-    ? `<span style="font-size:11px;color:var(--text2);opacity:.7;">αγορές − πωλήσεις</span>`
-    : `<span style="font-size:11px;color:var(--text2);opacity:.7;">σύνολο αγορών</span>`;
+    ? `<span style="font-size:11px;color:var(--text2);opacity:.7;">bought − sold</span>`
+    : `<span style="font-size:11px;color:var(--text2);opacity:.7;">total bought</span>`;
 
   document.getElementById('stockDcaSummary').innerHTML =
     `<div style="margin-top:16px;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">` +
-    `<h3 style="font-size:14px;font-weight:600;color:var(--text2);margin:0;white-space:nowrap;">Στατιστικά DCA (συνολικά)</h3>` +
+    `<h3 style="font-size:14px;font-weight:600;color:var(--text2);margin:0;white-space:nowrap;">DCA Stats (all-time)</h3>` +
     `<div style="display:flex;gap:6px;flex-wrap:wrap;">${periodPills}</div></div>` +
     `<div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">` +
     `<div style="display:flex;gap:6px;flex-wrap:wrap;">${modePills}</div>${modeNote}</div>` +
     `<div class="cards">` +
-    `<div class="card"><div class="label">Μέσος / ${p.avgLabel}</div><div class="value mono">${cur(avgPerPeriod)}</div><div class="sub">Σε ${spanned} ${p.unit}</div></div>` +
-    `<div class="card"><div class="label">Μέσος / Αγορά</div><div class="value mono">${cur(avgPerBuy)}</div><div class="sub">${allBuys.length} συνολικές αγορές</div></div>` +
-    `<div class="card"><div class="label">Τρέχον Σερί</div><div class="value mono ${currentStreak>=4?'positive':''}">${currentStreak}${p.short}</div><div class="sub">Συνεχόμενες ${p.unit}</div></div>` +
-    `<div class="card"><div class="label">Μεγαλύτερο Σερί</div><div class="value mono">${longestStreak}${p.short}</div><div class="sub">Συνεχόμενες ${p.unit}</div></div>` +
+    `<div class="card"><div class="label">Avg / ${p.avgLabel}</div><div class="value mono">${cur(avgPerPeriod)}</div><div class="sub">Over ${spanned} ${p.unit}</div></div>` +
+    `<div class="card"><div class="label">Avg / Buy</div><div class="value mono">${cur(avgPerBuy)}</div><div class="sub">${allBuys.length} total buys</div></div>` +
+    `<div class="card"><div class="label">Current Streak</div><div class="value mono ${currentStreak>=4?'positive':''}">${currentStreak}${p.short}</div><div class="sub">Consecutive ${p.unit}</div></div>` +
+    `<div class="card"><div class="label">Longest Streak</div><div class="value mono">${longestStreak}${p.short}</div><div class="sub">Consecutive ${p.unit}</div></div>` +
     `</div>`;
 }
 
@@ -1091,7 +1076,7 @@ function buildInterest() {
   const all = DATA.filter(r => r.Action === 'Interest on cash');
   const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
   const sel = document.getElementById('fIntMonth');
-  sel.innerHTML = '<option value="">Όλα</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  sel.innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
   renderInterest();
 }
 
@@ -1115,17 +1100,17 @@ function renderInterest() {
   });
 
   makeCards('interestCards', [
-    { label: 'Σύνολο Τόκων', value: cur(total), cls: 'positive', sub: `${d.length} εγγραφές` },
-    { label: 'Μέσος / Ημέρα', value: cur(avg) },
-    { label: 'Μέσος / Μήνα', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
+    { label: 'Total Interest', value: cur(total), cls: 'positive', sub: `${d.length} records` },
+    { label: 'Avg / Day', value: cur(avg) },
+    { label: 'Avg / Month', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
   ]);
 
-  const headers = ['Ημ/νία', 'Ποσό €', 'ID'];
+  const headers = ['Date', 'Amount €', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
   buildTable('interestTable', headers, rows, [, { align: 'right' }]);
 
   // Monthly summary
-  let html = '<h3 style="margin-top:16px;">Μηνιαία Ανάλυση Τόκων</h3><div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Σύνολο</th><th class="text-right">Μεταβ. Μ/Μ</th><th class="text-center">Πληρωμές</th></tr></thead><tbody>';
+  let html = '<h3 style="margin-top:16px;">Monthly Interest Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-right">MoM Δ</th><th class="text-center">Payments</th></tr></thead><tbody>';
   const sortedIntMonths = Object.keys(byMonth).sort();
   sortedIntMonths.forEach((mk, i) => {
     const val = byMonth[mk];
@@ -1147,8 +1132,8 @@ function renderInterest() {
   // Interest monthly chart
   const intMonths = Object.keys(byMonth).sort();
   if (intMonths.length > 0) {
-    const intSeries = [{ name: 'Τόκοι', data: intMonths.map(mk => byMonth[mk]), color: 'var(--purple)' }];
-    document.getElementById('interestChart').innerHTML = chartWrap('Μηνιαίοι Τόκοι', svgGroupedBar(intSeries, intMonths.map(mk => monthLabel(mk))));
+    const intSeries = [{ name: 'Interest', data: intMonths.map(mk => byMonth[mk]), color: 'var(--purple)' }];
+    document.getElementById('interestChart').innerHTML = chartWrap('Monthly Interest', svgGroupedBar(intSeries, intMonths.map(mk => monthLabel(mk))));
   }
 }
 
@@ -1166,8 +1151,8 @@ function buildDividends() {
   const all = DATA.filter(r => isDividend(r.Action));
   const tickers = [...new Set(all.map(r => r.Ticker).filter(Boolean))].sort();
   const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
-  document.getElementById('fDivTicker').innerHTML = '<option value="">Όλα</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
-  document.getElementById('fDivMonth').innerHTML = '<option value="">Όλα</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  document.getElementById('fDivTicker').innerHTML = '<option value="">All</option>' + tickers.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('fDivMonth').innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
   renderDividends();
 }
 
@@ -1193,14 +1178,14 @@ function renderDividends() {
   const effectiveTax = totalGross > 0 ? totalWithheldFromResult / (totalGross + totalWithheldFromResult) : 0;
 
   makeCards('divCards', [
-    { label: 'Μερίσματα (Καθαρά)', value: cur(totalNet), cls: totalNet > 0 ? 'positive' : '', sub: `${d.length} εγγραφές` },
-    { label: 'Παρακράτηση Φόρου', value: cur(totalWithheldFromResult), cls: totalWithheldFromResult > 0 ? 'negative' : '', sub: 'Παρακράτηση φόρου (στήλη Result)' },
-    { label: 'Μεικτά Μερίσματα', value: cur(totalNet + totalWithheldFromResult), sub: 'Καθαρά + Παρακράτηση' },
-    { label: 'Ποσοστό Παρακράτησης', value: pct(effectiveTax), sub: 'Πραγματικό ποσοστό παρακράτησης' },
-    { label: 'Προμήθειες FX', value: cur(totalWithheld), sub: 'Μετατροπή νομίσματος' },
+    { label: 'Dividends (Net)', value: cur(totalNet), cls: totalNet > 0 ? 'positive' : '', sub: `${d.length} records` },
+    { label: 'Withheld Tax', value: cur(totalWithheldFromResult), cls: totalWithheldFromResult > 0 ? 'negative' : '', sub: 'Withheld tax (Result)' },
+    { label: 'Gross Dividends', value: cur(totalNet + totalWithheldFromResult), sub: 'Net + Withheld' },
+    { label: 'Withholding Rate', value: pct(effectiveTax), sub: 'Effective withholding rate' },
+    { label: 'FX Fees', value: cur(totalWithheld), sub: 'Currency conversion' },
   ]);
 
-  const headers = ['Ημ/νία','Τύπος','Ticker','Όνομα','ISIN','Ποσό (Καθαρό) €','Παρακρ. Φόρος €','Νόμισμα','Ισοτιμία','Προμ. FX','ID'];
+  const headers = ['Date','Type','Ticker','Name','ISIN','Amount (Net) €','Withheld Tax €','Currency','Exchange Rate','FX Fee','ID'];
   const rows = d.map(r => [
     r.Time, r.Action, r.Ticker, r.Name, r.ISIN,
     num(r.Total).toFixed(2),
@@ -1210,7 +1195,7 @@ function renderDividends() {
     num(r['Currency conversion fee']).toFixed(2),
     r.ID
   ]);
-  const fmt = [,{fn: v => badge(v)},,,,{align:'right'},{align:'right',fn:v=>`<span class="negative">${v}</span>`},,{align:'right'},{align:'right'}];
+  const fmt = [,,,,,{align:'right'},{align:'right',fn:v=>`<span class="negative">${v}</span>`},,{align:'right'},{align:'right'}];
   buildTable('divTable', headers, rows, fmt);
 
   // Per-ticker
@@ -1223,11 +1208,11 @@ function renderDividends() {
     t.withheld += num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0;
     t.count++;
   });
-  let html = '<h3 style="margin-top:16px;">Ανά Ticker</h3>';
+  let html = '<h3 style="margin-top:16px;">Per Ticker</h3>';
   if (Object.keys(byTk).length === 0) {
-    html += '<p class="muted" style="padding:12px;">Δεν βρέθηκαν μερίσματα. Αν κατέχετε σωρευτικά ETFs (π.χ. VWCE, VUAA) αυτό είναι αναμενόμενο.</p>';
+    html += '<p class="muted" style="padding:12px;">No dividends found. If you hold accumulating ETFs (e.g. VWCE, VUAA) this is expected.</p>';
   } else {
-    html += '<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Όνομα</th><th class="text-right">Καθαρά €</th><th class="text-right">Παρακρ. Φόρος €</th><th class="text-right">Μεικτά €</th><th class="text-center"># Πληρωμές</th></tr></thead><tbody>';
+    html += '<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th class="text-right">Net €</th><th class="text-right">Withheld Tax €</th><th class="text-right">Gross €</th><th class="text-center"># Payments</th></tr></thead><tbody>';
     Object.entries(byTk).forEach(([tk, t]) => {
       html += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="text-right mono positive">${cur(t.net)}</td><td class="text-right mono negative">${cur(t.withheld)}</td><td class="text-right mono">${cur(t.net + t.withheld)}</td><td class="text-center">${t.count}</td></tr>`;
     });
@@ -1243,11 +1228,11 @@ function renderDividends() {
     byMonth[mk].net += num(r.Total);
     byMonth[mk].withheld += num(r.Result) < 0 ? Math.abs(num(r.Result)) : 0;
   });
-  let mHtml = '<h3 style="margin-top:16px;">Μηνιαία Ανάλυση Μερισμάτων</h3>';
+  let mHtml = '<h3 style="margin-top:16px;">Monthly Dividend Breakdown</h3>';
   if (Object.keys(byMonth).length === 0) {
-    mHtml += '<p class="muted" style="padding:12px;">Δεν υπάρχουν μερίσματα στην επιλεγμένη περίοδο.</p>';
+    mHtml += '<p class="muted" style="padding:12px;">No dividends in selected period.</p>';
   } else {
-    mHtml += '<div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Καθαρά €</th><th class="text-right">Παρακρ. Φόρος €</th><th class="text-right">Μεικτά €</th></tr></thead><tbody>';
+    mHtml += '<div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Net €</th><th class="text-right">Withheld Tax €</th><th class="text-right">Gross €</th></tr></thead><tbody>';
     Object.keys(byMonth).sort().forEach(mk => {
       const m = byMonth[mk];
       mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${cur(m.net)}</td><td class="text-right mono negative">${cur(m.withheld)}</td><td class="text-right mono">${cur(m.net + m.withheld)}</td></tr>`;
@@ -1258,15 +1243,15 @@ function renderDividends() {
 
   // Dividends charts
   const tkItems = Object.entries(byTk).map(([tk, t]) => ({ label: tk, value: t.net + t.withheld, color: 'var(--green)' })).sort((a, b) => b.value - a.value);
-  document.getElementById('divTickerChart').innerHTML = tkItems.length ? svgHBar(tkItems, { title: 'Μεικτά Μερίσματα ανά Ticker', color: 'var(--green)' }) : '';
+  document.getElementById('divTickerChart').innerHTML = tkItems.length ? svgHBar(tkItems, { title: 'Gross Dividends by Ticker', color: 'var(--green)' }) : '';
 
   const divMks = Object.keys(byMonth).sort();
   if (divMks.length > 0) {
     const divSeries = [
-      { name: 'Καθαρά', data: divMks.map(mk => byMonth[mk].net), color: 'var(--green)' },
-      { name: 'Παρακράτηση', data: divMks.map(mk => byMonth[mk].withheld), color: 'var(--red)' },
+      { name: 'Net', data: divMks.map(mk => byMonth[mk].net), color: 'var(--green)' },
+      { name: 'Withheld Tax', data: divMks.map(mk => byMonth[mk].withheld), color: 'var(--red)' },
     ];
-    document.getElementById('divMonthlyChart').innerHTML = chartWrap('Μηνιαία Μερίσματα', svgGroupedBar(divSeries, divMks.map(mk => monthLabel(mk))));
+    document.getElementById('divMonthlyChart').innerHTML = chartWrap('Monthly Dividends', svgGroupedBar(divSeries, divMks.map(mk => monthLabel(mk))));
   }
 }
 
@@ -1282,9 +1267,9 @@ function buildTransactions() {
   const categories = [...new Set(all.map(r => r['Merchant category']).filter(Boolean))].sort();
   const months = [...new Set(all.map(r => monthKey(r.Time)))].sort();
 
-  document.getElementById('fTxMerchant').innerHTML = '<option value="">Όλα</option>' + merchants.map(m => `<option value="${m}">${m}</option>`).join('');
-  document.getElementById('fTxCategory').innerHTML = '<option value="">Όλα</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
-  document.getElementById('fTxMonth').innerHTML = '<option value="">Όλα</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  document.getElementById('fTxMerchant').innerHTML = '<option value="">All</option>' + merchants.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('fTxCategory').innerHTML = '<option value="">All</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('fTxMonth').innerHTML = '<option value="">All</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
   renderTransactions();
 }
 
@@ -1314,23 +1299,23 @@ function renderTransactions() {
   const cashbackRate = totalSpentAll > 0 ? totalCashbackAll / totalSpentAll * 100 : 0;
 
   makeCards('txCards', [
-    { label: 'Σύνολο Δαπανών', value: cur(totalSpent), cls: 'negative', sub: `${d.length} χρεώσεις` },
-    { label: 'Μέση Χρέωση', value: cur(avg) },
-    { label: 'Μέγιστη Χρέωση', value: cur(max) },
-    { label: 'Ποσοστό Επιστροφής', value: cashbackRate.toFixed(2) + '%', cls: 'positive', sub: 'Συνολική επιστροφή / συνολικές δαπάνες' },
+    { label: 'Total Spending', value: cur(totalSpent), cls: 'negative', sub: `${d.length} charges` },
+    { label: 'Avg Charge', value: cur(avg) },
+    { label: 'Max Charge', value: cur(max) },
+    { label: 'Cashback Rate', value: cashbackRate.toFixed(2) + '%', cls: 'positive', sub: 'All-time cashback / spending' },
   ]);
 
-  const headers = ['Ημ/νία', 'Ποσό €', 'Έμπορος', 'Κατηγορία', 'ID'];
-  const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r['Merchant name'] || actionLabel(r.Action), r['Merchant category'] || '—', r.ID]);
+  const headers = ['Date', 'Amount €', 'Merchant', 'Category', 'ID'];
+  const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r['Merchant name'] || r.Action, r['Merchant category'] || '—', r.ID]);
   buildTable('txTable', headers, rows, [, { align: 'right', fn: v => `<span class="negative">${v}</span>` }]);
 
   // By merchant
   const byMerch = {};
   d.forEach(r => {
-    const m = r['Merchant name'] || 'Λοιπά';
+    const m = r['Merchant name'] || 'Other';
     byMerch[m] = (byMerch[m] || 0) + Math.abs(num(r.Total));
   });
-  let mHtml = '<h3 style="margin-top:16px;">Ανά Έμπορο</h3><div class="table-wrap"><table><thead><tr><th>Έμπορος</th><th class="text-right">Σύνολο</th><th class="text-right">%</th></tr></thead><tbody>';
+  let mHtml = '<h3 style="margin-top:16px;">By Merchant</h3><div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>';
   Object.entries(byMerch).sort((a,b)=>b[1]-a[1]).forEach(([m, v]) => {
     mHtml += `<tr><td>${m}</td><td class="text-right mono">${cur(v)}</td><td class="text-right mono">${pct(v/totalSpent)}</td></tr>`;
   });
@@ -1340,10 +1325,10 @@ function renderTransactions() {
   // By category
   const byCat = {};
   d.forEach(r => {
-    const c = r['Merchant category'] || 'Λοιπά';
+    const c = r['Merchant category'] || 'Other';
     byCat[c] = (byCat[c] || 0) + Math.abs(num(r.Total));
   });
-  let cHtml = '<h3 style="margin-top:16px;">Ανά Κατηγορία</h3><div class="table-wrap"><table><thead><tr><th>Κατηγορία</th><th class="text-right">Σύνολο</th><th class="text-right">%</th></tr></thead><tbody>';
+  let cHtml = '<h3 style="margin-top:16px;">By Category</h3><div class="table-wrap"><table><thead><tr><th>Category</th><th class="text-right">Total</th><th class="text-right">%</th></tr></thead><tbody>';
   Object.entries(byCat).sort((a,b)=>b[1]-a[1]).forEach(([c, v]) => {
     cHtml += `<tr><td>${c}</td><td class="text-right mono">${cur(v)}</td><td class="text-right mono">${pct(v/totalSpent)}</td></tr>`;
   });
@@ -1351,7 +1336,7 @@ function renderTransactions() {
   document.getElementById('txCategorySummary').innerHTML = cHtml;
 
   // By day of week
-  const DOW = ['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
+  const DOW = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const byDow = {};
   DOW.forEach(day => { byDow[day] = { total: 0, count: 0 }; });
   d.forEach(r => {
@@ -1361,7 +1346,7 @@ function renderTransactions() {
     byDow[day].count++;
   });
   const dowTotal = DOW.reduce((s, day) => s + byDow[day].total, 0);
-  let dowHtml = '<h3 style="margin-top:16px;">Δαπάνες ανά Ημέρα Εβδομάδας</h3><div class="table-wrap"><table><thead><tr><th>Ημέρα</th><th class="text-right">Σύνολο</th><th class="text-right">%</th><th class="text-center"># Χρεώσεις</th><th class="text-right">Μέσο / Χρέωση</th></tr></thead><tbody>';
+  let dowHtml = '<h3 style="margin-top:16px;">Spending by Day of Week</h3><div class="table-wrap"><table><thead><tr><th>Day</th><th class="text-right">Total</th><th class="text-right">%</th><th class="text-center"># Charges</th><th class="text-right">Avg / Charge</th></tr></thead><tbody>';
   DOW.forEach(day => {
     const { total, count } = byDow[day];
     const dayPct = dowTotal > 0 ? (total / dowTotal * 100).toFixed(1) + '%' : '—';
@@ -1377,7 +1362,7 @@ function renderTransactions() {
     byMonthTx[mk] = (byMonthTx[mk] || 0) + Math.abs(num(r.Total));
   });
   const sortedTxMonths = Object.keys(byMonthTx).sort();
-  let txMonthHtml = '<h3 style="margin-top:16px;">Μηνιαίες Δαπάνες</h3><div class="table-wrap"><table><thead><tr><th>Μήνας</th><th class="text-right">Σύνολο</th><th class="text-right">Μεταβ. Μ/Μ</th></tr></thead><tbody>';
+  let txMonthHtml = '<h3 style="margin-top:16px;">Monthly Spending</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-right">MoM Δ</th></tr></thead><tbody>';
   sortedTxMonths.forEach((mk, i) => {
     const val = byMonthTx[mk];
     let momCell = '<td class="text-right mono muted">—</td>';
@@ -1396,7 +1381,7 @@ function renderTransactions() {
 
   // Top 10 largest transactions
   const top10 = [...d].sort((a, b) => Math.abs(num(b.Total)) - Math.abs(num(a.Total))).slice(0, 10);
-  let topHtml = '<h3 style="margin-top:16px;">10 Μεγαλύτερες Χρεώσεις</h3><div class="table-wrap"><table><thead><tr><th>Ημ/νία</th><th>Έμπορος</th><th>Κατηγορία</th><th class="text-right">Ποσό</th></tr></thead><tbody>';
+  let topHtml = '<h3 style="margin-top:16px;">Top 10 Largest Charges</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th class="text-right">Amount</th></tr></thead><tbody>';
   top10.forEach(r => {
     topHtml += `<tr><td>${dateStr(r.Time)}</td><td>${r['Merchant name'] || '—'}</td><td>${r['Merchant category'] || '—'}</td><td class="text-right mono negative">${cur(Math.abs(num(r.Total)))}</td></tr>`;
   });
@@ -1419,7 +1404,7 @@ function renderTransactions() {
     .sort((a, b) => b[1].total - a[1].total);
 
   if (recurring.length > 0) {
-    let rHtml = '<h3 style="margin-top:16px;">Πιθανές Επαναλαμβανόμενες Χρεώσεις</h3><div class="table-wrap"><table><thead><tr><th>Έμπορος</th><th class="text-center">Ενεργοί Μήνες</th><th class="text-center"># Χρεώσεις</th><th class="text-right">Μέσο / Μήνα</th><th class="text-right">Σύνολο</th></tr></thead><tbody>';
+    let rHtml = '<h3 style="margin-top:16px;">Likely Recurring Charges</h3><div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="text-center">Months Active</th><th class="text-center"># Charges</th><th class="text-right">Avg / Month</th><th class="text-right">Total</th></tr></thead><tbody>';
     recurring.forEach(([merchant, v]) => {
       const avgPerMonth = v.total / v.months.size;
       rHtml += `<tr><td>${merchant}</td><td class="text-center">${v.months.size}</td><td class="text-center">${v.count}</td><td class="text-right mono negative">${cur(avgPerMonth)}</td><td class="text-right mono">${cur(v.total)}</td></tr>`;
@@ -1433,22 +1418,22 @@ function renderTransactions() {
   // Merchant chart (top 15)
   const merchItems = Object.entries(byMerch).sort((a, b) => b[1] - a[1]).slice(0, 15)
     .map(([m, v]) => ({ label: m, value: v, pct: totalSpent > 0 ? (v / totalSpent * 100).toFixed(1) + '%' : '', color: 'var(--yellow)' }));
-  document.getElementById('txMerchantChart').innerHTML = merchItems.length ? svgHBar(merchItems, { title: 'Κορυφαίοι Έμποροι ανά Δαπάνη', color: 'var(--yellow)' }) : '';
+  document.getElementById('txMerchantChart').innerHTML = merchItems.length ? svgHBar(merchItems, { title: 'Top Merchants by Spending', color: 'var(--yellow)' }) : '';
 
   // Category chart
   const catItems = Object.entries(byCat).sort((a, b) => b[1] - a[1])
     .map(([c, v]) => ({ label: c, value: v, pct: totalSpent > 0 ? (v / totalSpent * 100).toFixed(1) + '%' : '', color: 'var(--orange)' }));
-  document.getElementById('txCategoryChart').innerHTML = catItems.length ? svgHBar(catItems, { title: 'Δαπάνες ανά Κατηγορία', color: 'var(--orange)' }) : '';
+  document.getElementById('txCategoryChart').innerHTML = catItems.length ? svgHBar(catItems, { title: 'Spending by Category', color: 'var(--orange)' }) : '';
 
   // Day-of-week chart
   const dowData = DOW.map(day => byDow[day].total);
-  const dowSeries = [{ name: 'Δαπάνες', data: dowData, color: 'var(--red)' }];
-  document.getElementById('txDowChart').innerHTML = chartWrap('Δαπάνες ανά Ημέρα Εβδομάδας', svgGroupedBar(dowSeries, DOW.map(d => d.slice(0, 3))));
+  const dowSeries = [{ name: 'Spending', data: dowData, color: 'var(--red)' }];
+  document.getElementById('txDowChart').innerHTML = chartWrap('Spending by Day of Week', svgGroupedBar(dowSeries, DOW.map(d => d.slice(0, 3))));
 
   // Monthly spending chart
   if (sortedTxMonths.length > 0) {
-    const txMonthlySeries = [{ name: 'Δαπάνες', data: sortedTxMonths.map(mk => byMonthTx[mk]), color: 'var(--red)' }];
-    document.getElementById('txMonthlyChart').innerHTML = chartWrap('Μηνιαίες Δαπάνες', svgGroupedBar(txMonthlySeries, sortedTxMonths.map(mk => monthLabel(mk))));
+    const txMonthlySeries = [{ name: 'Spending', data: sortedTxMonths.map(mk => byMonthTx[mk]), color: 'var(--red)' }];
+    document.getElementById('txMonthlyChart').innerHTML = chartWrap('Monthly Spending', svgGroupedBar(txMonthlySeries, sortedTxMonths.map(mk => monthLabel(mk))));
   }
 }
 
@@ -1470,11 +1455,11 @@ function renderDeposits() {
   const avg = d.length ? total / d.length : 0;
 
   makeCards('depCards', [
-    { label: 'Σύνολο Καταθέσεων', value: cur(total), sub: `${d.length} καταθέσεις` },
-    { label: 'Μέση Κατάθεση', value: cur(avg) },
+    { label: 'Total Deposits', value: cur(total), sub: `${d.length} deposits` },
+    { label: 'Avg Deposit', value: cur(avg) },
   ]);
 
-  const headers = ['Ημ/νία', 'Ποσό €', 'Σημειώσεις', 'ID'];
+  const headers = ['Date', 'Amount €', 'Notes', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.Notes, r.ID]);
   buildTable('depTable', headers, rows, [, { align: 'right' }]);
 
@@ -1483,8 +1468,8 @@ function renderDeposits() {
   d.forEach(r => { const mk = monthKey(r.Time); depByMonth[mk] = (depByMonth[mk] || 0) + num(r.Total); });
   const depMks = Object.keys(depByMonth).sort();
   if (depMks.length > 0) {
-    const depSeries = [{ name: 'Καταθέσεις', data: depMks.map(mk => depByMonth[mk]), color: 'var(--accent)' }];
-    document.getElementById('depChart').innerHTML = chartWrap('Μηνιαίες Καταθέσεις', svgGroupedBar(depSeries, depMks.map(mk => monthLabel(mk))));
+    const depSeries = [{ name: 'Deposits', data: depMks.map(mk => depByMonth[mk]), color: 'var(--accent)' }];
+    document.getElementById('depChart').innerHTML = chartWrap('Monthly Deposits', svgGroupedBar(depSeries, depMks.map(mk => monthLabel(mk))));
   }
 }
 
@@ -1512,19 +1497,19 @@ function renderCashback() {
   });
 
   makeCards('cbCards', [
-    { label: 'Σύνολο Επιστροφής', value: cur(total), cls: 'positive', sub: `${d.length} εγγραφές` },
-    { label: 'Μέσο / Μήνα', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
+    { label: 'Total Cashback', value: cur(total), cls: 'positive', sub: `${d.length} records` },
+    { label: 'Avg / Month', value: cur(Object.keys(byMonth).length ? total / Object.keys(byMonth).length : 0) },
   ]);
 
-  const headers = ['Ημ/νία', 'Ποσό €', 'ID'];
+  const headers = ['Date', 'Amount €', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
   buildTable('cbTable', headers, rows, [, { align: 'right' }]);
 
   // Cashback monthly chart
   const cbMks = Object.keys(byMonth).sort();
   if (cbMks.length > 0) {
-    const cbSeries = [{ name: 'Επιστροφή', data: cbMks.map(mk => byMonth[mk]), color: 'var(--orange)' }];
-    document.getElementById('cbChart').innerHTML = chartWrap('Μηνιαία Επιστροφή', svgGroupedBar(cbSeries, cbMks.map(mk => monthLabel(mk))));
+    const cbSeries = [{ name: 'Cashback', data: cbMks.map(mk => byMonth[mk]), color: 'var(--orange)' }];
+    document.getElementById('cbChart').innerHTML = chartWrap('Monthly Cashback', svgGroupedBar(cbSeries, cbMks.map(mk => monthLabel(mk))));
   }
 }
 
@@ -1536,7 +1521,7 @@ function clearCbFilters() {
 // ── RAW DATA ──
 function buildRaw() {
   const actions = [...new Set(DATA.map(r => r.Action))].sort();
-  document.getElementById('fRawAction').innerHTML = '<option value="">Όλα</option>' + actions.map(a => `<option value="${a}">${actionLabel(a)}</option>`).join('');
+  document.getElementById('fRawAction').innerHTML = '<option value="">All</option>' + actions.map(a => `<option value="${a}">${a}</option>`).join('');
   renderRaw();
 }
 
@@ -1552,7 +1537,7 @@ function renderRaw() {
   if (to) d = d.filter(r => dateStr(r.Time) <= to);
   if (search) d = d.filter(r => Object.values(r).some(v => v.toLowerCase().includes(search)));
 
-  const headers = ['Τύπος','Ημ/νία','Ticker','Όνομα','ISIN','Μετοχές','Τιμή','Ισοτιμία','Αποτέλεσμα','Σύνολο','Προμ. FX','Έμπορος','Κατηγορία'];
+  const headers = ['Action','Date','Ticker','Name','ISIN','Shares','Price','Exchange Rate','Result','Total','FX Fee','Merchant','Category'];
   const rows = d.map(r => [
     r.Action, r.Time, r.Ticker, r.Name, r.ISIN,
     r['No. of shares'] ? num(r['No. of shares']).toFixed(6) : '',
@@ -1591,9 +1576,9 @@ function buildCharts() {
   cards.forEach(r => { mSpend[monthKey(r.Time)] += Math.abs(num(r.Total)); });
 
   const series1 = [
-    { name:'Καταθέσεις',       data: allMonths.map(mk => mDep[mk]),   color: 'var(--accent)' },
-    { name:'Καθαρή Επένδυση',  data: allMonths.map(mk => Math.max(0, mNet[mk])), color: 'var(--green)' },
-    { name:'Δαπάνες',          data: allMonths.map(mk => mSpend[mk]), color: 'var(--red)' },
+    { name:'Deposits',     data: allMonths.map(mk => mDep[mk]),   color: 'var(--accent)' },
+    { name:'Net Invested', data: allMonths.map(mk => Math.max(0, mNet[mk])), color: 'var(--green)' },
+    { name:'Spending',     data: allMonths.map(mk => mSpend[mk]), color: 'var(--red)' },
   ];
   document.getElementById('chartMonthly').innerHTML = svgGroupedBar(series1, allMonths.map(mk => monthLabel(mk)));
 
@@ -1605,8 +1590,8 @@ function buildCharts() {
     cumDepData.push(cumDep); cumNetData.push(cumNet);
   });
   const series2 = [
-    { name:'Σωρευτικές Καταθέσεις', data: cumDepData, color: 'var(--accent)' },
-    { name:'Σωρευτική Καθαρή Επένδυση', data: cumNetData, color: 'var(--green)' },
+    { name:'Cumulative Deposits', data: cumDepData, color: 'var(--accent)' },
+    { name:'Cumulative Net Invested', data: cumNetData, color: 'var(--green)' },
   ];
   document.getElementById('chartCumulative').innerHTML = svgLine(series2, allMonths.map(mk => monthLabel(mk)));
 
@@ -1827,7 +1812,7 @@ function buildTax() {
   });
 
   const sortedYears = Object.keys(years).sort();
-  let html = `<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Ομαδοποιημένο ανά ημερολογιακό έτος. Συμβουλευτείτε φοροτεχνικό για τους ειδικούς κανόνες της χώρας σας.</p>`;
+  let html = `<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Grouped by calendar year. Consult a tax professional for your jurisdiction's specific rules.</p>`;
 
   sortedYears.forEach(y => {
     const d = years[y];
@@ -1835,12 +1820,12 @@ function buildTax() {
     html += `<div style="margin-bottom:24px;">`;
     html += `<div class="section-title" style="margin-bottom:12px;">📅 ${y}</div>`;
     html += `<div class="cards">`;
-    html += `<div class="card"><div class="label">Πραγματοποιημένα Κέρδη</div><div class="value mono positive">${cur(d.gains)}</div></div>`;
-    html += `<div class="card"><div class="label">Πραγματοποιημένες Ζημίες</div><div class="value mono negative">${cur(d.losses)}</div></div>`;
-    html += `<div class="card"><div class="label">Καθαρό Κεφαλαιακό Κέρδος</div><div class="value mono ${netGain >= 0 ? 'positive' : 'negative'}">${cur(netGain)}</div></div>`;
-    html += `<div class="card"><div class="label">Μερίσματα (Καθαρά)</div><div class="value mono positive">${cur(d.divNet)}</div>${d.divTax > 0 ? `<div class="sub">Παρακράτηση: ${cur(d.divTax)}</div>` : ''}</div>`;
-    html += `<div class="card"><div class="label">Τόκοι</div><div class="value mono positive">${cur(d.interest)}</div></div>`;
-    html += `<div class="card"><div class="label">Καταθέσεις</div><div class="value mono">${cur(d.deposited)}</div></div>`;
+    html += `<div class="card"><div class="label">Realised Gains</div><div class="value mono positive">${cur(d.gains)}</div></div>`;
+    html += `<div class="card"><div class="label">Realised Losses</div><div class="value mono negative">${cur(d.losses)}</div></div>`;
+    html += `<div class="card"><div class="label">Net Capital Gain</div><div class="value mono ${netGain >= 0 ? 'positive' : 'negative'}">${cur(netGain)}</div></div>`;
+    html += `<div class="card"><div class="label">Dividends (Net)</div><div class="value mono positive">${cur(d.divNet)}</div>${d.divTax > 0 ? `<div class="sub">Withheld: ${cur(d.divTax)}</div>` : ''}</div>`;
+    html += `<div class="card"><div class="label">Interest Earned</div><div class="value mono positive">${cur(d.interest)}</div></div>`;
+    html += `<div class="card"><div class="label">Deposited</div><div class="value mono">${cur(d.deposited)}</div></div>`;
     html += `</div></div>`;
   });
 
@@ -1848,12 +1833,12 @@ function buildTax() {
     const d = years[y];
     return [y, d.gains.toFixed(2), d.losses.toFixed(2), (d.gains-d.losses).toFixed(2), d.divNet.toFixed(2), d.divTax.toFixed(2), d.interest.toFixed(2), d.deposited.toFixed(2)];
   });
-  const csvStr = [['Έτος','Κέρδη','Ζημίες','Καθαρό Κεφαλαιακό Κέρδος','Μερίσματα (Καθαρά)','Παρακρατηθείς Φόρος Μερισμάτων','Τόκοι','Καταθέσεις'], ...exportRows]
+  const csvStr = [['Year','Gains','Losses','Net Capital Gain','Dividends (Net)','Div Withheld Tax','Interest','Deposited'], ...exportRows]
     .map(r => r.map(v => `"${v}"`).join(',')).join('\n');
   html += `<div class="export-bar"><button class="btn btn-sm" onclick="
     const b=new Blob(['\uFEFF'+'${csvStr.replace(/'/g,"\\'").replace(/\n/g,'\\n')}'],{type:'text/csv;charset=utf-8;'});
     const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tax_summary.csv';a.click()
-  ">⬇ Εξαγωγή Φορολογικού CSV</button></div>`;
+  ">⬇ Export Tax CSV</button></div>`;
 
   document.getElementById('taxContent').innerHTML = html;
 }
@@ -1877,7 +1862,7 @@ function mergeCSV(text, filename) {
   try { localStorage.setItem('t212_csv', mergedCSV); } catch(e) {}
 
   const info = document.getElementById('fileInfo').textContent.split(' —')[0];
-  document.getElementById('fileInfo').textContent = `${info} + ${filename} — ${DATA.length} εγγραφές`;
+  document.getElementById('fileInfo').textContent = `${info} + ${filename} — ${DATA.length} records`;
   buildAll();
 }
 
@@ -1886,7 +1871,7 @@ function toggleCollapse(btn) {
   const wrap = btn.closest('.table-wrap, .chart-wrap');
   const collapsed = wrap.classList.toggle('collapsed');
   btn.textContent = collapsed ? '+' : '−';
-  btn.title = collapsed ? 'Ανάπτυξη' : 'Σύμπτυξη';
+  btn.title = collapsed ? 'Expand' : 'Minimise';
 }
 
 function injectCollapseButtons() {
@@ -1895,7 +1880,7 @@ function injectCollapseButtons() {
     const btn = document.createElement('button');
     btn.className = 'collapse-btn';
     btn.textContent = '−';
-    btn.title = 'Σύμπτυξη';
+    btn.title = 'Minimise';
     btn.onclick = () => toggleCollapse(btn);
     el.insertBefore(btn, el.firstChild);
   });
@@ -1987,7 +1972,7 @@ document.getElementById('mergeInput').addEventListener('change', e => {
     const saved = localStorage.getItem('t212_csv');
     if (saved) {
       const name = localStorage.getItem('t212_csv_name') || '';
-      loadCSV(saved, name ? name + ' (αποθηκευμένο)' : '', false);
+      loadCSV(saved, name ? name + ' (cached)' : '', false);
     }
   } catch(e) {}
 })();
