@@ -29,7 +29,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .mono { font-family:'JetBrains Mono',monospace; }
 
 /* Layout */
-.app { max-width:1400px; margin:0 auto; padding:20px; }
+.app { width:100%; padding:20px 28px; }
 .header { display:flex; align-items:center; justify-content:space-between; padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:24px; flex-wrap:wrap; gap:12px; }
 .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
 .header h1 span { color:var(--accent); }
@@ -105,15 +105,78 @@ tr:hover td { background:rgba(79,140,255,.03); }
 
 /* Responsive */
 @media(max-width:768px) {
+  .app { padding:12px; }
+  .header { padding:12px 0; gap:8px; }
+  .header h1 { font-size:17px; }
+
+  /* Tabs: horizontal scroll strip */
+  .tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:3px; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { padding:8px 13px; font-size:13px; flex-shrink:0; }
+
+  /* Cards: always 2 cols, smaller value text */
+  .cards { grid-template-columns:1fr 1fr; gap:8px; }
+  .card { padding:12px; }
+  .card .value { font-size:17px; }
+  .card .label { font-size:10px; }
+
+  /* Filters: 2-col grid, bigger touch targets */
+  .filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px; }
+  .filter-group { width:100%; }
+  .filter-group label { font-size:10px; }
+  .filter-group input,
+  .filter-group select { min-width:0; width:100%; height:44px; font-size:15px; padding:10px 10px; }
+  /* Clear button spans full width */
+  .filters > .filter-group:last-child { grid-column:1/-1; }
+  .filters > .filter-group:last-child .btn { width:100%; height:44px; font-size:15px; }
+
+  /* Tables */
+  .table-wrap { font-size:12px; }
+  th { font-size:10px; padding:8px 10px; }
+  td { padding:7px 10px; }
+
+  /* Section titles */
+  .section-title { font-size:14px; }
+  .summary-group h3, .chart-title { font-size:13px; }
+
+  /* Charts: let them scroll, don't clip */
+  .chart-wrap { padding:12px; }
+  .chart-scroll { -webkit-overflow-scrolling:touch; }
+}
+
+@media(max-width:420px) {
   .cards { grid-template-columns:1fr 1fr; }
-  .filters { flex-direction:column; }
-  .filter-group input, .filter-group select { min-width:100%; }
+  .card .value { font-size:15px; }
+  .header h1 { font-size:15px; }
 }
 
 .hidden { display:none !important; }
 .text-right { text-align:right; }
 .text-center { text-align:center; }
 .muted { color:var(--text2); }
+
+/* Collapsible grids */
+.table-wrap { position:relative; }
+.chart-wrap { position:relative; }
+.collapse-btn {
+  position:absolute; top:6px; right:7px; z-index:2;
+  width:20px; height:20px; padding:0;
+  background:var(--surface2); border:1px solid var(--border); border-radius:4px;
+  color:var(--text2); font-size:14px; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s, color .15s;
+}
+.collapse-btn:hover { border-color:var(--accent); color:var(--text); }
+.table-wrap.collapsed > *:not(.collapse-btn),
+.chart-wrap.collapsed > *:not(.chart-title):not(.collapse-btn) { display:none; }
+.table-wrap.collapsed, .chart-wrap.collapsed { min-height:34px; }
+
+/* Charts */
+.chart-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px; }
+.chart-title { font-size:14px; font-weight:600; color:var(--text2); margin-bottom:12px; }
+.chart-scroll { overflow-x:auto; overflow-y:visible; }
+.chart-svg { display:block; height:auto; }
+.chart-svg text { font-family:'DM Sans',sans-serif; }
 </style>
 </head>
 <body>
@@ -122,8 +185,11 @@ tr:hover td { background:rgba(79,140,255,.03); }
     <h1>📊 Trading 212 <span>Accounting Tool</span></h1>
     <div style="display:flex;gap:8px;align-items:center;">
       <span class="muted" style="font-size:13px;" id="fileInfo"></span>
+      <button class="btn" onclick="try{localStorage.removeItem('t212_csv');localStorage.removeItem('t212_csv_name');}catch(e){}location.reload()" title="Clear cached CSV">Clear</button>
+      <button class="btn" id="addCsvBtn" onclick="document.getElementById('mergeInput').click()" style="display:none" title="Merge another CSV export">Add CSV</button>
       <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Load CSV</button>
       <input type="file" id="fileInput" accept=".csv" style="display:none">
+      <input type="file" id="mergeInput" accept=".csv" style="display:none">
     </div>
   </div>
 
@@ -143,11 +209,15 @@ tr:hover td { background:rgba(79,140,255,.03); }
       <button class="tab" data-tab="deposits">Deposits</button>
       <button class="tab" data-tab="cashback">Cashback</button>
       <button class="tab" data-tab="raw">All Data</button>
+      <button class="tab" data-tab="charts">Charts</button>
+      <button class="tab" data-tab="tax">Tax</button>
     </div>
 
     <!-- OVERVIEW -->
     <div class="section active" id="sec-overview">
       <div class="cards" id="overviewCards"></div>
+      <div class="summary-group" id="portfolioValueSummary"></div>
+      <div class="summary-group" id="depositLagSummary"></div>
       <div class="summary-group" id="tickerSummary"></div>
       <div class="summary-group" id="monthlyBreakdown"></div>
     </div>
@@ -199,7 +269,9 @@ tr:hover td { background:rgba(79,140,255,.03); }
       <div class="table-wrap"><div class="table-scroll">
         <table id="stockTable"><thead><tr></tr></thead><tbody></tbody></table>
       </div></div>
+      <div id="stockAllocChart"></div>
       <div class="summary-group" id="stockPerTickerSummary"></div>
+      <div id="stockDcaSummary"></div>
     </div>
 
     <!-- INTEREST -->
@@ -230,6 +302,7 @@ tr:hover td { background:rgba(79,140,255,.03); }
         <table id="interestTable"><thead><tr></tr></thead><tbody></tbody></table>
       </div></div>
       <div id="interestMonthly"></div>
+      <div id="interestChart"></div>
     </div>
 
     <!-- DIVIDENDS -->
@@ -264,7 +337,9 @@ tr:hover td { background:rgba(79,140,255,.03); }
         <table id="divTable"><thead><tr></tr></thead><tbody></tbody></table>
       </div></div>
       <div id="divPerTickerSummary"></div>
+      <div id="divTickerChart"></div>
       <div id="divMonthlySummary"></div>
+      <div id="divMonthlyChart"></div>
     </div>
 
     <!-- TRANSACTIONS (Card debits) -->
@@ -311,7 +386,15 @@ tr:hover td { background:rgba(79,140,255,.03); }
         <table id="txTable"><thead><tr></tr></thead><tbody></tbody></table>
       </div></div>
       <div id="txMerchantSummary"></div>
+      <div id="txMerchantChart"></div>
       <div id="txCategorySummary"></div>
+      <div id="txCategoryChart"></div>
+      <div id="txDowSummary"></div>
+      <div id="txDowChart"></div>
+      <div id="txMonthlySummary"></div>
+      <div id="txMonthlyChart"></div>
+      <div id="txTopSummary"></div>
+      <div id="txRecurringSummary"></div>
     </div>
 
     <!-- DEPOSITS -->
@@ -331,6 +414,7 @@ tr:hover td { background:rgba(79,140,255,.03); }
         </div>
       </div>
       <div class="cards" id="depCards"></div>
+      <div id="depChart"></div>
       <div class="export-bar">
         <button class="btn btn-sm" onclick="exportCSV('depTable')">⬇ CSV</button>
       </div>
@@ -356,6 +440,7 @@ tr:hover td { background:rgba(79,140,255,.03); }
         </div>
       </div>
       <div class="cards" id="cbCards"></div>
+      <div id="cbChart"></div>
       <div class="export-bar">
         <button class="btn btn-sm" onclick="exportCSV('cbTable')">⬇ CSV</button>
       </div>
@@ -395,6 +480,20 @@ tr:hover td { background:rgba(79,140,255,.03); }
         <table id="rawTable"><thead><tr></tr></thead><tbody></tbody></table>
       </div></div>
     </div>
+
+    <!-- CHARTS -->
+    <div class="section" id="sec-charts">
+      <div class="section-title">📊 Charts</div>
+      <div class="chart-wrap"><div class="chart-title">Monthly Overview — Deposits vs Net Invested vs Spending</div><div id="chartMonthly"></div></div>
+      <div class="chart-wrap"><div class="chart-title">Cumulative Deposits vs Net Invested</div><div id="chartCumulative"></div></div>
+      <div class="chart-wrap"><div class="chart-title">DCA — Avg Buy Price per Month</div><div id="chartDCA"></div></div>
+    </div>
+
+    <!-- TAX -->
+    <div class="section" id="sec-tax">
+      <div class="section-title">🧾 Tax Summary</div>
+      <div id="taxContent"></div>
+    </div>
   </div>
 </div>
 
@@ -431,7 +530,7 @@ function parseCSV(text) {
   return rows;
 }
 
-function loadCSV(text) {
+function loadCSV(text, filename, persist = true) {
   const rows = parseCSV(text);
   if (rows.length < 2) return;
   HEADERS = rows[0];
@@ -442,7 +541,10 @@ function loadCSV(text) {
   });
   document.getElementById('uploadZone').classList.add('hidden');
   document.getElementById('mainContent').classList.remove('hidden');
-  document.getElementById('fileInfo').textContent = `${DATA.length} records`;
+  document.getElementById('addCsvBtn').style.display = '';
+  const label = (filename ? filename + ' — ' : '') + DATA.length + ' records';
+  document.getElementById('fileInfo').textContent = label;
+  if (persist) try { localStorage.setItem('t212_csv', text); if (filename) localStorage.setItem('t212_csv_name', filename); } catch(e) {}
   buildAll();
 }
 
@@ -529,11 +631,18 @@ function sortTable(tableId, colIdx) {
   const tbody = document.getElementById(tableId).querySelector('tbody');
   const rows = Array.from(tbody.rows);
   rows.sort((a, b) => {
-    let va = a.cells[colIdx].textContent.replace(/[€\s.]/g, '').replace(',', '.');
-    let vb = b.cells[colIdx].textContent.replace(/[€\s.]/g, '').replace(',', '.');
-    const na = parseFloat(va), nb = parseFloat(vb);
+    const raw = c => c.textContent.trim();
+    // Strip currency symbols, then normalise thousands/decimal separators
+    const toNum = s => {
+      s = s.replace(/[€$£¥₹\s]/g, '');
+      // Detect format: if last separator is ',' treat as European (1.234,56 → 1234.56)
+      if (/\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
+      else s = s.replace(/,/g, '');
+      return parseFloat(s);
+    };
+    const na = toNum(raw(a.cells[colIdx])), nb = toNum(raw(b.cells[colIdx]));
     if (!isNaN(na) && !isNaN(nb)) return dir === 'asc' ? na - nb : nb - na;
-    return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return dir === 'asc' ? raw(a.cells[colIdx]).localeCompare(raw(b.cells[colIdx])) : raw(b.cells[colIdx]).localeCompare(raw(a.cells[colIdx]));
   });
   rows.forEach(r => tbody.appendChild(r));
   // Update header styling
@@ -564,7 +673,10 @@ function buildAll() {
   buildDeposits();
   buildCashback();
   buildRaw();
+  buildCharts();
+  buildTax();
   attachFilterListeners();
+  injectCollapseButtons();
 }
 
 // ── OVERVIEW ──
@@ -590,6 +702,10 @@ function buildOverview() {
   const totalDividends = dividends.reduce((s, r) => s + num(r.Total), 0);
   const totalDivTax = dividends.reduce((s, r) => { const res = num(r.Result); return s + (res < 0 ? Math.abs(res) : 0); }, 0);
 
+  const netInvested = totalBought - totalSold;
+  const savingsRate = totalDeposited > 0 ? netInvested / totalDeposited * 100 : 0;
+  const netCashFlow = totalDeposited - totalSpent;
+
   makeCards('overviewCards', [
     { label: 'Total Bought', value: cur(totalBought), sub: `${buys.length} trades` },
     { label: 'Total Sold', value: cur(totalSold), sub: `${sells.length} trades` },
@@ -601,7 +717,13 @@ function buildOverview() {
     { label: 'Cashback', value: cur(totalCashback), cls: 'positive', sub: `${cashback.length} records` },
     { label: 'FX Fees', value: cur(totalFees), cls: totalFees > 0 ? 'negative' : '', sub: 'Currency conversion' },
     { label: 'Card Cost', value: cur(totalNewCard), sub: newCard.length ? 'New card charge' : '—' },
+    { label: 'Savings Rate', value: savingsRate.toFixed(1) + '%', cls: savingsRate >= 50 ? 'positive' : 'neutral', sub: 'Net held / Deposited' },
+    { label: 'Net Cash Flow', value: cur(netCashFlow), cls: netCashFlow >= 0 ? 'positive' : 'negative', sub: 'Deposits − Card spending' },
+    { label: 'FX Drag', value: totalBought > 0 ? (totalFees / totalBought * 100).toFixed(3) + '%' : '0%', cls: totalFees > 0 ? 'negative' : '', sub: 'FX fees / total invested' },
   ]);
+
+  buildPortfolioSnapshot();
+  buildDepositInsights();
 
   // Per-ticker summary
   const tickers = {};
@@ -614,9 +736,11 @@ function buildOverview() {
     t.fees += num(r['Currency conversion fee']);
   });
 
-  let tickerHtml = '<h3>Per Ticker</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th>ISIN</th><th class="text-right">Bought €</th><th class="text-right">Sold €</th><th class="text-right">Shares Bought</th><th class="text-right">Shares Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">FX Fees</th><th class="text-center"># Buys</th><th class="text-center"># Sells</th></tr></thead><tbody>';
+  let tickerHtml = '<h3>Per Ticker</h3><div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th>ISIN</th><th class="text-right">Bought €</th><th class="text-right">% of Portfolio</th><th class="text-right">Sold €</th><th class="text-right">Shares Held</th><th class="text-right">Shares Bought</th><th class="text-right">Shares Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">FX Fees</th><th class="text-center"># Buys</th><th class="text-center"># Sells</th></tr></thead><tbody>';
   Object.entries(tickers).forEach(([tk, t]) => {
-    tickerHtml += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="mono" style="font-size:11px;">${t.isin}</td><td class="text-right mono">${cur(t.bought)}</td><td class="text-right mono">${cur(t.sold)}</td><td class="text-right mono">${t.shares_bought.toFixed(4)}</td><td class="text-right mono">${t.shares_sold.toFixed(4)}</td><td class="text-right mono ${t.result >= 0 ? 'positive' : 'negative'}">${cur(t.result)}</td><td class="text-right mono">${cur(t.fees)}</td><td class="text-center">${t.buys}</td><td class="text-center">${t.sells}</td></tr>`;
+    const allocPct = totalBought > 0 ? (t.bought / totalBought * 100).toFixed(1) + '%' : '0%';
+    const sharesHeld = (t.shares_bought - t.shares_sold).toFixed(4);
+    tickerHtml += `<tr><td><strong>${tk}</strong></td><td>${t.name}</td><td class="mono" style="font-size:11px;">${t.isin}</td><td class="text-right mono">${cur(t.bought)}</td><td class="text-right mono">${allocPct}</td><td class="text-right mono">${cur(t.sold)}</td><td class="text-right mono">${sharesHeld}</td><td class="text-right mono">${t.shares_bought.toFixed(4)}</td><td class="text-right mono">${t.shares_sold.toFixed(4)}</td><td class="text-right mono ${t.result >= 0 ? 'positive' : 'negative'}">${cur(t.result)}</td><td class="text-right mono">${cur(t.fees)}</td><td class="text-center">${t.buys}</td><td class="text-center">${t.sells}</td></tr>`;
   });
   tickerHtml += '</tbody></table></div>';
   document.getElementById('tickerSummary').innerHTML = tickerHtml;
@@ -638,13 +762,94 @@ function buildOverview() {
     m.fees += num(r['Currency conversion fee']);
   });
 
-  let mHtml = '<h3>Monthly Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Deposits</th><th class="text-right">Bought</th><th class="text-right">Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">Dividends</th><th class="text-right">Withheld Tax</th><th class="text-right">Interest</th><th class="text-right">Spending</th><th class="text-right">Cashback</th><th class="text-right">FX Fees</th></tr></thead><tbody>';
+  let mHtml = '<h3>Monthly Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Deposits</th><th class="text-right">Bought</th><th class="text-right">Sold</th><th class="text-right">Profit/Loss</th><th class="text-right">Dividends</th><th class="text-right">Withheld Tax</th><th class="text-right">Interest</th><th class="text-right">Spending</th><th class="text-right">MoM Spending Δ</th><th class="text-right">Net Flow</th><th class="text-right">Savings Rate</th><th class="text-right">Cashback</th><th class="text-right">FX Fees</th></tr></thead><tbody>';
+  let prevMonthSpent = null;
   Object.keys(months).sort().forEach(mk => {
     const m = months[mk];
-    mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono">${cur(m.deposits)}</td><td class="text-right mono">${cur(m.bought)}</td><td class="text-right mono">${cur(m.sold)}</td><td class="text-right mono ${m.result >= 0 ? 'positive' : 'negative'}">${cur(m.result)}</td><td class="text-right mono positive">${cur(m.dividends)}</td><td class="text-right mono negative">${cur(m.divTax)}</td><td class="text-right mono positive">${cur(m.interest)}</td><td class="text-right mono negative">${cur(m.spent)}</td><td class="text-right mono">${cur(m.cashback)}</td><td class="text-right mono">${cur(m.fees)}</td></tr>`;
+    const netFlow = m.deposits - m.spent;
+    const savRate = m.deposits > 0 ? ((m.bought - m.sold) / m.deposits * 100).toFixed(1) + '%' : '—';
+    let momHtml = '<td class="text-right mono muted">—</td>';
+    if (prevMonthSpent !== null && prevMonthSpent > 0) {
+      const delta = (m.spent - prevMonthSpent) / prevMonthSpent * 100;
+      const cls = delta <= 0 ? 'positive' : 'negative';
+      momHtml = `<td class="text-right mono ${cls}">${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%</td>`;
+    }
+    prevMonthSpent = m.spent;
+    mHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono">${cur(m.deposits)}</td><td class="text-right mono">${cur(m.bought)}</td><td class="text-right mono">${cur(m.sold)}</td><td class="text-right mono ${m.result >= 0 ? 'positive' : 'negative'}">${cur(m.result)}</td><td class="text-right mono positive">${cur(m.dividends)}</td><td class="text-right mono negative">${cur(m.divTax)}</td><td class="text-right mono positive">${cur(m.interest)}</td><td class="text-right mono negative">${cur(m.spent)}</td>${momHtml}<td class="text-right mono ${netFlow >= 0 ? 'positive' : 'negative'}">${cur(netFlow)}</td><td class="text-right mono">${savRate}</td><td class="text-right mono">${cur(m.cashback)}</td><td class="text-right mono">${cur(m.fees)}</td></tr>`;
   });
   mHtml += '</tbody></table></div>';
   document.getElementById('monthlyBreakdown').innerHTML = mHtml;
+}
+
+// ── PORTFOLIO SNAPSHOT ──
+function buildPortfolioSnapshot() {
+  const tickers = {};
+  DATA.filter(r => r.Action === 'Market buy' || r.Action === 'Market sell').forEach(r => {
+    if (!r.Ticker) return;
+    if (!tickers[r.Ticker]) tickers[r.Ticker] = { name: r.Name, sharesB: 0, sharesS: 0, costTotal: 0, lastPrice: 0, lastPriceDate: '' };
+    const t = tickers[r.Ticker];
+    if (r.Action === 'Market buy') {
+      t.sharesB += num(r['No. of shares']);
+      t.costTotal += num(r.Total);
+      if (!t.lastPriceDate || r.Time > t.lastPriceDate) { t.lastPrice = num(r['Price / share']); t.lastPriceDate = r.Time; }
+    } else {
+      t.sharesS += num(r['No. of shares']);
+    }
+  });
+
+  let totalEst = 0, totalCost = 0;
+  const rows = Object.entries(tickers).map(([tk, t]) => {
+    const held = t.sharesB - t.sharesS;
+    const cb = t.sharesB > 0 ? t.costTotal / t.sharesB : 0;
+    const est = held * t.lastPrice;
+    const unreal = est - held * cb;
+    totalEst += est; totalCost += held * cb;
+    const heldNum = parseFloat(held.toFixed(6));
+    return [tk, t.name, held.toFixed(6), heldNum > 0 ? cur4(cb) : '—', heldNum > 0 ? cur4(t.lastPrice) : '—', heldNum > 0 ? dateStr(t.lastPriceDate) : '—', cur(est), unreal, unreal >= 0 ? 'positive' : 'negative'];
+  });
+  const totalUnreal = totalEst - totalCost;
+
+  const lastDate = rows.length ? rows.map(r => r[5]).sort().at(-1) : '—';
+  let html = `<h3>Portfolio Snapshot <span style="font-size:12px;font-weight:400;color:var(--text2);">(est. as of last buy price — not real-time)</span></h3>`;
+  html += `<div class="cards" style="margin-bottom:12px;">`;
+  html += `<div class="card"><div class="label">Est. Total Value</div><div class="value mono">${cur(totalEst)}</div><div class="sub">Last price: ${lastDate}</div></div>`;
+  html += `<div class="card"><div class="label">Total Cost Basis</div><div class="value mono">${cur(totalCost)}</div></div>`;
+  html += `<div class="card"><div class="label">Unrealised P&L</div><div class="value mono ${totalUnreal >= 0 ? 'positive' : 'negative'}">${cur(totalUnreal)}</div><div class="sub">${totalCost > 0 ? (totalUnreal / totalCost * 100).toFixed(2) + '%' : '—'}</div></div>`;
+  html += `</div>`;
+  html += `<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Name</th><th class="text-right">Shares Held</th><th class="text-right">Cost Basis</th><th class="text-right">Last Price</th><th>Last Buy Date</th><th class="text-right">Est. Value</th><th class="text-right">Unrealised P&L</th></tr></thead><tbody>`;
+  rows.forEach(([tk, name, held, cb, lp, lpd, est, unreal, cls]) => {
+    html += `<tr><td><strong>${tk}</strong></td><td>${name}</td><td class="text-right mono">${held}</td><td class="text-right mono">${cb}</td><td class="text-right mono">${lp}</td><td>${lpd}</td><td class="text-right mono">${est}</td><td class="text-right mono ${cls}">${cur(unreal)}</td></tr>`;
+  });
+  html += `</tbody></table></div>`;
+  document.getElementById('portfolioValueSummary').innerHTML = html;
+}
+
+// ── DEPOSIT INSIGHTS ──
+function buildDepositInsights() {
+  const deposits = DATA.filter(r => r.Action === 'Deposit').sort((a, b) => a.Time.localeCompare(b.Time));
+  const buys = DATA.filter(r => r.Action === 'Market buy').sort((a, b) => a.Time.localeCompare(b.Time));
+  const totalDeposited = deposits.reduce((s, r) => s + num(r.Total), 0);
+  const totalBought = buys.reduce((s, r) => s + num(r.Total), 0);
+  const totalSpent = DATA.filter(r => r.Action === 'Card debit' || r.Action === 'New card cost').reduce((s, r) => s + Math.abs(num(r.Total)), 0);
+  const totalCashback = DATA.filter(r => r.Action === 'Spending cashback').reduce((s, r) => s + num(r.Total), 0);
+  const totalInterest = DATA.filter(r => r.Action === 'Interest on cash').reduce((s, r) => s + num(r.Total), 0);
+  const freeCash = totalDeposited + totalCashback + totalInterest - totalBought - totalSpent;
+
+  const lags = [];
+  deposits.forEach(dep => {
+    const nextBuy = buys.find(b => b.Time >= dep.Time);
+    if (nextBuy) lags.push((new Date(nextBuy.Time) - new Date(dep.Time)) / 3600000);
+  });
+  const avgLag = lags.length ? lags.reduce((s, v) => s + v, 0) / lags.length : 0;
+  const medLag = lags.length ? [...lags].sort((a, b) => a - b)[Math.floor(lags.length / 2)] : 0;
+  const fmtLag = h => h < 1 ? `${Math.round(h * 60)}m` : h < 24 ? `${h.toFixed(1)}h` : `${(h / 24).toFixed(1)}d`;
+
+  let html = '<h3>Deposit Insights</h3><div class="cards">';
+  html += `<div class="card"><div class="label">Free Cash (est.)</div><div class="value mono ${freeCash >= 0 ? 'positive' : 'negative'}">${cur(freeCash)}</div><div class="sub">Deposited − invested − spent</div></div>`;
+  html += `<div class="card"><div class="label">Avg Deploy Time</div><div class="value mono">${lags.length ? fmtLag(avgLag) : '—'}</div><div class="sub">Deposit → next buy (avg)</div></div>`;
+  html += `<div class="card"><div class="label">Median Deploy Time</div><div class="value mono">${lags.length ? fmtLag(medLag) : '—'}</div><div class="sub">Deposit → next buy (median)</div></div>`;
+  html += '</div>';
+  document.getElementById('depositLagSummary').innerHTML = html;
 }
 
 // ── STOCKS ──
@@ -681,7 +886,8 @@ function renderStocks() {
   const totalSold = sells.reduce((s, r) => s + num(r.Total), 0);
   const totalShares = buys.reduce((s, r) => s + num(r['No. of shares']), 0) - sells.reduce((s, r) => s + num(r['No. of shares']), 0);
   const totalResult = sells.reduce((s, r) => s + num(r.Result), 0);
-  const avgBuyPrice = buys.length ? buys.reduce((s, r) => s + num(r['Price / share']), 0) / buys.length : 0;
+  const totalSharesBought = buys.reduce((s, r) => s + num(r['No. of shares']), 0);
+  const avgBuyPrice = totalSharesBought > 0 ? buys.reduce((s, r) => s + num(r['Price / share']) * num(r['No. of shares']), 0) / totalSharesBought : 0;
   const totalFees = d.reduce((s, r) => s + num(r['Currency conversion fee']), 0);
 
   makeCards('stockCards', [
@@ -719,10 +925,141 @@ function renderStocks() {
   });
   let html = '<h3>Per Ticker Summary (filtered)</h3><div class="cards">';
   Object.entries(byTk).forEach(([tk, t]) => {
-    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Bought: ${cur(t.bought)} (${t.sB.toFixed(4)} shr)</div><div class="sub">Sold: ${cur(t.sold)} (${t.sS.toFixed(4)} shr)</div><div class="sub">P&L: <span class="${t.result>=0?'positive':'negative'}">${cur(t.result)}</span></div><div class="sub">FX: ${cur(t.fees)}</div></div>`;
+    const costBasis = t.sB > 0 ? t.bought / t.sB : 0;
+    const sharesHeld = (t.sB - t.sS).toFixed(4);
+    html += `<div class="card"><div class="label">${tk}</div><div class="sub">Bought: ${cur(t.bought)} (${t.sB.toFixed(4)} shr)</div><div class="sub">Sold: ${cur(t.sold)} (${t.sS.toFixed(4)} shr)</div><div class="sub">Held: ${sharesHeld} shr</div><div class="sub">Cost Basis: <span class="mono">${cur4(costBasis)}</span></div><div class="sub">P&L: <span class="${t.result>=0?'positive':'negative'}">${cur(t.result)}</span></div><div class="sub">FX: ${cur(t.fees)}</div></div>`;
   });
   html += '</div>';
   document.getElementById('stockPerTickerSummary').innerHTML = html;
+
+  // Stock allocation chart
+  const allocItems = Object.entries(byTk)
+    .filter(([, t]) => t.bought > 0)
+    .sort((a, b) => b[1].bought - a[1].bought)
+    .map(([tk, t]) => ({ label: tk, value: t.bought, pct: totalBought > 0 ? (t.bought / totalBought * 100).toFixed(1) + '%' : '', color: 'var(--accent)' }));
+  document.getElementById('stockAllocChart').innerHTML = svgHBar(allocItems, { title: 'Invested by Ticker', color: 'var(--accent)' });
+
+  // ── DCA Stats ──
+  const allBuys = DATA.filter(r => r.Action === 'Market buy');
+  if (allBuys.length > 0) {
+    window._dcaBuys = allBuys;
+    window._dcaSells = DATA.filter(r => r.Action === 'Market sell');
+    renderDCASummary();
+  }
+}
+
+// ── DCA period state & helpers ──
+let dcaPeriod = 'week';
+let dcaMode = 'gross';
+
+const DCA_PERIODS = [
+  { id:'day',     label:'Daily',     avgLabel:'Day',      unit:'days',       short:'d'  },
+  { id:'week',    label:'Weekly',    avgLabel:'Week',     unit:'weeks',      short:'w'  },
+  { id:'month',   label:'Monthly',   avgLabel:'Month',    unit:'months',     short:'mo' },
+  { id:'quarter', label:'Quarterly', avgLabel:'Quarter',  unit:'quarters',   short:'q'  },
+  { id:'half',    label:'Half-Year', avgLabel:'Half Yr',  unit:'half-years', short:'hy' },
+  { id:'year',    label:'Yearly',    avgLabel:'Year',     unit:'years',      short:'yr' },
+];
+
+function dcaPeriodKey(dateStr, period) {
+  const d = new Date(dateStr);
+  switch (period) {
+    case 'day':     return d.toISOString().slice(0, 10);
+    case 'week': {
+      const dt = new Date(d); dt.setHours(0,0,0,0);
+      dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7));
+      return dt.toISOString().slice(0, 10);
+    }
+    case 'month':   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    case 'quarter': return `${d.getFullYear()}-Q${Math.floor(d.getMonth()/3)+1}`;
+    case 'half':    return `${d.getFullYear()}-H${d.getMonth()<6?1:2}`;
+    case 'year':    return `${d.getFullYear()}`;
+  }
+}
+
+function dcaPeriodsSpanned(first, last, period) {
+  switch (period) {
+    case 'day':     return Math.max(1, Math.round((last-first)/86400000) + 1);
+    case 'week':    return Math.max(1, Math.round((last-first)/(7*86400000)) + 1);
+    case 'month':   return Math.max(1, (last.getFullYear()*12+last.getMonth()) - (first.getFullYear()*12+first.getMonth()) + 1);
+    case 'quarter': return Math.max(1, (last.getFullYear()*4+Math.floor(last.getMonth()/3)) - (first.getFullYear()*4+Math.floor(first.getMonth()/3)) + 1);
+    case 'half':    return Math.max(1, (last.getFullYear()*2+(last.getMonth()<6?0:1)) - (first.getFullYear()*2+(first.getMonth()<6?0:1)) + 1);
+    case 'year':    return Math.max(1, last.getFullYear() - first.getFullYear() + 1);
+  }
+}
+
+function dcaIsConsecutive(a, b, period) {
+  switch (period) {
+    case 'day':  return Math.round((new Date(b)-new Date(a))/86400000) === 1;
+    case 'week': return Math.round((new Date(b)-new Date(a))/(7*86400000)) === 1;
+    case 'month': {
+      const [ay,am] = a.split('-').map(Number), [by,bm] = b.split('-').map(Number);
+      return (by*12+bm) - (ay*12+am) === 1;
+    }
+    case 'quarter': {
+      const [ay,aq] = [+a.split('-Q')[0], +a.split('-Q')[1]];
+      const [by,bq] = [+b.split('-Q')[0], +b.split('-Q')[1]];
+      return (by*4+bq) - (ay*4+aq) === 1;
+    }
+    case 'half': {
+      const [ay,ah] = [+a.split('-H')[0], +a.split('-H')[1]];
+      const [by,bh] = [+b.split('-H')[0], +b.split('-H')[1]];
+      return (by*2+bh) - (ay*2+ah) === 1;
+    }
+    case 'year': return +b - +a === 1;
+  }
+}
+
+function renderDCASummary() {
+  const allBuys = window._dcaBuys;
+  if (!allBuys || !allBuys.length) return;
+  const p = DCA_PERIODS.find(x => x.id === dcaPeriod);
+
+  const buyDates = allBuys.map(r => new Date(r.Time)).sort((a,b) => a-b);
+  const firstBuy = buyDates[0], lastBuy = buyDates[buyDates.length-1];
+  const totalAllBought = allBuys.reduce((s,r) => s+num(r.Total), 0);
+  const totalAllSold = (window._dcaSells||[]).reduce((s,r) => s+num(r.Total), 0);
+  const totalUsed = dcaMode === 'gross' ? totalAllBought : Math.max(0, totalAllBought - totalAllSold);
+  const spanned = dcaPeriodsSpanned(firstBuy, lastBuy, dcaPeriod);
+  const avgPerPeriod = totalUsed / spanned;
+  const avgPerBuy = totalUsed / allBuys.length;
+
+  const buyPeriods = [...new Set(allBuys.map(r => dcaPeriodKey(r.Time, dcaPeriod)))].sort();
+  let longestStreak = 1, tempStreak = 1;
+  for (let i = 1; i < buyPeriods.length; i++) {
+    if (dcaIsConsecutive(buyPeriods[i-1], buyPeriods[i], dcaPeriod)) {
+      tempStreak++; longestStreak = Math.max(longestStreak, tempStreak);
+    } else tempStreak = 1;
+  }
+  const currentStreak = tempStreak;
+
+  const pillStyle = (active) =>
+    `padding:4px 12px;border-radius:20px;border:1px solid ${active?'var(--accent)':'var(--border)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--text2)'};font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;`;
+
+  const periodPills = DCA_PERIODS.map(pp =>
+    `<button onclick="dcaPeriod='${pp.id}';renderDCASummary()" style="${pillStyle(pp.id===dcaPeriod)}">${pp.label}</button>`
+  ).join('');
+
+  const modePills =
+    `<button onclick="dcaMode='gross';renderDCASummary()" style="${pillStyle(dcaMode==='gross')}">Gross</button>` +
+    `<button onclick="dcaMode='net';renderDCASummary()" style="${pillStyle(dcaMode==='net')}">Net</button>`;
+
+  const modeNote = dcaMode === 'net'
+    ? `<span style="font-size:11px;color:var(--text2);opacity:.7;">bought − sold</span>`
+    : `<span style="font-size:11px;color:var(--text2);opacity:.7;">total bought</span>`;
+
+  document.getElementById('stockDcaSummary').innerHTML =
+    `<div style="margin-top:16px;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">` +
+    `<h3 style="font-size:14px;font-weight:600;color:var(--text2);margin:0;white-space:nowrap;">DCA Stats (all-time)</h3>` +
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;">${periodPills}</div></div>` +
+    `<div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">` +
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;">${modePills}</div>${modeNote}</div>` +
+    `<div class="cards">` +
+    `<div class="card"><div class="label">Avg / ${p.avgLabel}</div><div class="value mono">${cur(avgPerPeriod)}</div><div class="sub">Over ${spanned} ${p.unit}</div></div>` +
+    `<div class="card"><div class="label">Avg / Buy</div><div class="value mono">${cur(avgPerBuy)}</div><div class="sub">${allBuys.length} total buys</div></div>` +
+    `<div class="card"><div class="label">Current Streak</div><div class="value mono ${currentStreak>=4?'positive':''}">${currentStreak}${p.short}</div><div class="sub">Consecutive ${p.unit}</div></div>` +
+    `<div class="card"><div class="label">Longest Streak</div><div class="value mono">${longestStreak}${p.short}</div><div class="sub">Consecutive ${p.unit}</div></div>` +
+    `</div>`;
 }
 
 function clearStockFilters() {
@@ -769,13 +1106,31 @@ function renderInterest() {
   buildTable('interestTable', headers, rows, [, { align: 'right' }]);
 
   // Monthly summary
-  let html = '<h3 style="margin-top:16px;">Monthly Interest Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-center">Days</th></tr></thead><tbody>';
-  Object.keys(byMonth).sort().forEach(mk => {
-    const days = d.filter(r => monthKey(r.Time) === mk).length;
-    html += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${cur(byMonth[mk])}</td><td class="text-center">${days}</td></tr>`;
+  let html = '<h3 style="margin-top:16px;">Monthly Interest Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-right">MoM Δ</th><th class="text-center">Payments</th></tr></thead><tbody>';
+  const sortedIntMonths = Object.keys(byMonth).sort();
+  sortedIntMonths.forEach((mk, i) => {
+    const val = byMonth[mk];
+    const payments = d.filter(r => monthKey(r.Time) === mk).length;
+    let momCell = '<td class="text-right mono muted">—</td>';
+    if (i > 0) {
+      const prev = byMonth[sortedIntMonths[i - 1]];
+      if (prev > 0) {
+        const delta = (val - prev) / prev * 100;
+        const cls = delta >= 0 ? 'positive' : 'negative';
+        momCell = `<td class="text-right mono ${cls}">${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%</td>`;
+      }
+    }
+    html += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono positive">${cur(val)}</td>${momCell}<td class="text-center">${payments}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('interestMonthly').innerHTML = html;
+
+  // Interest monthly chart
+  const intMonths = Object.keys(byMonth).sort();
+  if (intMonths.length > 0) {
+    const intSeries = [{ name: 'Interest', data: intMonths.map(mk => byMonth[mk]), color: 'var(--purple)' }];
+    document.getElementById('interestChart').innerHTML = chartWrap('Monthly Interest', svgGroupedBar(intSeries, intMonths.map(mk => monthLabel(mk))));
+  }
 }
 
 function clearIntFilters() {
@@ -881,6 +1236,19 @@ function renderDividends() {
     mHtml += '</tbody></table></div>';
   }
   document.getElementById('divMonthlySummary').innerHTML = mHtml;
+
+  // Dividends charts
+  const tkItems = Object.entries(byTk).map(([tk, t]) => ({ label: tk, value: t.net + t.withheld, color: 'var(--green)' })).sort((a, b) => b.value - a.value);
+  document.getElementById('divTickerChart').innerHTML = tkItems.length ? svgHBar(tkItems, { title: 'Gross Dividends by Ticker', color: 'var(--green)' }) : '';
+
+  const divMks = Object.keys(byMonth).sort();
+  if (divMks.length > 0) {
+    const divSeries = [
+      { name: 'Net', data: divMks.map(mk => byMonth[mk].net), color: 'var(--green)' },
+      { name: 'Withheld Tax', data: divMks.map(mk => byMonth[mk].withheld), color: 'var(--red)' },
+    ];
+    document.getElementById('divMonthlyChart').innerHTML = chartWrap('Monthly Dividends', svgGroupedBar(divSeries, divMks.map(mk => monthLabel(mk))));
+  }
 }
 
 function clearDivFilters() {
@@ -922,11 +1290,15 @@ function renderTransactions() {
   const totalSpent = d.reduce((s, r) => s + Math.abs(num(r.Total)), 0);
   const avg = d.length ? totalSpent / d.length : 0;
   const max = d.length ? Math.max(...d.map(r => Math.abs(num(r.Total)))) : 0;
+  const totalCashbackAll = DATA.filter(r => r.Action === 'Spending cashback').reduce((s, r) => s + num(r.Total), 0);
+  const totalSpentAll = DATA.filter(r => r.Action === 'Card debit' || r.Action === 'New card cost').reduce((s, r) => s + Math.abs(num(r.Total)), 0);
+  const cashbackRate = totalSpentAll > 0 ? totalCashbackAll / totalSpentAll * 100 : 0;
 
   makeCards('txCards', [
     { label: 'Total Spending', value: cur(totalSpent), cls: 'negative', sub: `${d.length} charges` },
     { label: 'Avg Charge', value: cur(avg) },
     { label: 'Max Charge', value: cur(max) },
+    { label: 'Cashback Rate', value: cashbackRate.toFixed(2) + '%', cls: 'positive', sub: 'All-time cashback / spending' },
   ]);
 
   const headers = ['Date', 'Amount €', 'Merchant', 'Category', 'ID'];
@@ -958,6 +1330,107 @@ function renderTransactions() {
   });
   cHtml += '</tbody></table></div>';
   document.getElementById('txCategorySummary').innerHTML = cHtml;
+
+  // By day of week
+  const DOW = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const byDow = {};
+  DOW.forEach(day => { byDow[day] = { total: 0, count: 0 }; });
+  d.forEach(r => {
+    const dt = new Date(r.Time);
+    const day = DOW[(dt.getDay() + 6) % 7];
+    byDow[day].total += Math.abs(num(r.Total));
+    byDow[day].count++;
+  });
+  const dowTotal = DOW.reduce((s, day) => s + byDow[day].total, 0);
+  let dowHtml = '<h3 style="margin-top:16px;">Spending by Day of Week</h3><div class="table-wrap"><table><thead><tr><th>Day</th><th class="text-right">Total</th><th class="text-right">%</th><th class="text-center"># Charges</th><th class="text-right">Avg / Charge</th></tr></thead><tbody>';
+  DOW.forEach(day => {
+    const { total, count } = byDow[day];
+    const dayPct = dowTotal > 0 ? (total / dowTotal * 100).toFixed(1) + '%' : '—';
+    dowHtml += `<tr><td>${day}</td><td class="text-right mono">${cur(total)}</td><td class="text-right mono">${dayPct}</td><td class="text-center">${count}</td><td class="text-right mono">${count > 0 ? cur(total / count) : '—'}</td></tr>`;
+  });
+  dowHtml += '</tbody></table></div>';
+  document.getElementById('txDowSummary').innerHTML = dowHtml;
+
+  // Monthly spending with MoM delta
+  const byMonthTx = {};
+  d.forEach(r => {
+    const mk = monthKey(r.Time);
+    byMonthTx[mk] = (byMonthTx[mk] || 0) + Math.abs(num(r.Total));
+  });
+  const sortedTxMonths = Object.keys(byMonthTx).sort();
+  let txMonthHtml = '<h3 style="margin-top:16px;">Monthly Spending</h3><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Total</th><th class="text-right">MoM Δ</th></tr></thead><tbody>';
+  sortedTxMonths.forEach((mk, i) => {
+    const val = byMonthTx[mk];
+    let momCell = '<td class="text-right mono muted">—</td>';
+    if (i > 0) {
+      const prev = byMonthTx[sortedTxMonths[i - 1]];
+      if (prev > 0) {
+        const delta = (val - prev) / prev * 100;
+        const cls = delta <= 0 ? 'positive' : 'negative';
+        momCell = `<td class="text-right mono ${cls}">${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%</td>`;
+      }
+    }
+    txMonthHtml += `<tr><td>${monthLabel(mk)}</td><td class="text-right mono negative">${cur(val)}</td>${momCell}</tr>`;
+  });
+  txMonthHtml += '</tbody></table></div>';
+  document.getElementById('txMonthlySummary').innerHTML = txMonthHtml;
+
+  // Top 10 largest transactions
+  const top10 = [...d].sort((a, b) => Math.abs(num(b.Total)) - Math.abs(num(a.Total))).slice(0, 10);
+  let topHtml = '<h3 style="margin-top:16px;">Top 10 Largest Charges</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th class="text-right">Amount</th></tr></thead><tbody>';
+  top10.forEach(r => {
+    topHtml += `<tr><td>${dateStr(r.Time)}</td><td>${r['Merchant name'] || '—'}</td><td>${r['Merchant category'] || '—'}</td><td class="text-right mono negative">${cur(Math.abs(num(r.Total)))}</td></tr>`;
+  });
+  topHtml += '</tbody></table></div>';
+  document.getElementById('txTopSummary').innerHTML = topHtml;
+
+  // Recurring charges (all-time, not filtered — need full picture across months)
+  const allDebits = DATA.filter(r => r.Action === 'Card debit');
+  const recurMap = {};
+  allDebits.forEach(r => {
+    const m = r['Merchant name']; if (!m) return;
+    if (!recurMap[m]) recurMap[m] = { months: new Set(), total: 0, count: 0, amounts: [] };
+    recurMap[m].months.add(monthKey(r.Time));
+    recurMap[m].total += Math.abs(num(r.Total));
+    recurMap[m].count++;
+    recurMap[m].amounts.push(Math.abs(num(r.Total)));
+  });
+  const recurring = Object.entries(recurMap)
+    .filter(([, v]) => v.months.size >= 2)
+    .sort((a, b) => b[1].total - a[1].total);
+
+  if (recurring.length > 0) {
+    let rHtml = '<h3 style="margin-top:16px;">Likely Recurring Charges</h3><div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="text-center">Months Active</th><th class="text-center"># Charges</th><th class="text-right">Avg / Month</th><th class="text-right">Total</th></tr></thead><tbody>';
+    recurring.forEach(([merchant, v]) => {
+      const avgPerMonth = v.total / v.months.size;
+      rHtml += `<tr><td>${merchant}</td><td class="text-center">${v.months.size}</td><td class="text-center">${v.count}</td><td class="text-right mono negative">${cur(avgPerMonth)}</td><td class="text-right mono">${cur(v.total)}</td></tr>`;
+    });
+    rHtml += '</tbody></table></div>';
+    document.getElementById('txRecurringSummary').innerHTML = rHtml;
+  } else {
+    document.getElementById('txRecurringSummary').innerHTML = '';
+  }
+
+  // Merchant chart (top 15)
+  const merchItems = Object.entries(byMerch).sort((a, b) => b[1] - a[1]).slice(0, 15)
+    .map(([m, v]) => ({ label: m, value: v, pct: totalSpent > 0 ? (v / totalSpent * 100).toFixed(1) + '%' : '', color: 'var(--yellow)' }));
+  document.getElementById('txMerchantChart').innerHTML = merchItems.length ? svgHBar(merchItems, { title: 'Top Merchants by Spending', color: 'var(--yellow)' }) : '';
+
+  // Category chart
+  const catItems = Object.entries(byCat).sort((a, b) => b[1] - a[1])
+    .map(([c, v]) => ({ label: c, value: v, pct: totalSpent > 0 ? (v / totalSpent * 100).toFixed(1) + '%' : '', color: 'var(--orange)' }));
+  document.getElementById('txCategoryChart').innerHTML = catItems.length ? svgHBar(catItems, { title: 'Spending by Category', color: 'var(--orange)' }) : '';
+
+  // Day-of-week chart
+  const dowData = DOW.map(day => byDow[day].total);
+  const dowSeries = [{ name: 'Spending', data: dowData, color: 'var(--red)' }];
+  document.getElementById('txDowChart').innerHTML = chartWrap('Spending by Day of Week', svgGroupedBar(dowSeries, DOW.map(d => d.slice(0, 3))));
+
+  // Monthly spending chart
+  if (sortedTxMonths.length > 0) {
+    const txMonthlySeries = [{ name: 'Spending', data: sortedTxMonths.map(mk => byMonthTx[mk]), color: 'var(--red)' }];
+    document.getElementById('txMonthlyChart').innerHTML = chartWrap('Monthly Spending', svgGroupedBar(txMonthlySeries, sortedTxMonths.map(mk => monthLabel(mk))));
+  }
 }
 
 function clearTxFilters() {
@@ -978,13 +1451,22 @@ function renderDeposits() {
   const avg = d.length ? total / d.length : 0;
 
   makeCards('depCards', [
-    { label: 'Σύνολο Καταθέσεων', value: cur(total), sub: `${d.length} deposits` },
+    { label: 'Total Deposits', value: cur(total), sub: `${d.length} deposits` },
     { label: 'Avg Deposit', value: cur(avg) },
   ]);
 
   const headers = ['Date', 'Amount €', 'Notes', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.Notes, r.ID]);
   buildTable('depTable', headers, rows, [, { align: 'right' }]);
+
+  // Deposits monthly chart
+  const depByMonth = {};
+  d.forEach(r => { const mk = monthKey(r.Time); depByMonth[mk] = (depByMonth[mk] || 0) + num(r.Total); });
+  const depMks = Object.keys(depByMonth).sort();
+  if (depMks.length > 0) {
+    const depSeries = [{ name: 'Deposits', data: depMks.map(mk => depByMonth[mk]), color: 'var(--accent)' }];
+    document.getElementById('depChart').innerHTML = chartWrap('Monthly Deposits', svgGroupedBar(depSeries, depMks.map(mk => monthLabel(mk))));
+  }
 }
 
 function clearDepFilters() {
@@ -1018,6 +1500,13 @@ function renderCashback() {
   const headers = ['Date', 'Amount €', 'ID'];
   const rows = d.map(r => [r.Time, num(r.Total).toFixed(2), r.ID]);
   buildTable('cbTable', headers, rows, [, { align: 'right' }]);
+
+  // Cashback monthly chart
+  const cbMks = Object.keys(byMonth).sort();
+  if (cbMks.length > 0) {
+    const cbSeries = [{ name: 'Cashback', data: cbMks.map(mk => byMonth[mk]), color: 'var(--orange)' }];
+    document.getElementById('cbChart').innerHTML = chartWrap('Monthly Cashback', svgGroupedBar(cbSeries, cbMks.map(mk => monthLabel(mk))));
+  }
 }
 
 function clearCbFilters() {
@@ -1044,7 +1533,7 @@ function renderRaw() {
   if (to) d = d.filter(r => dateStr(r.Time) <= to);
   if (search) d = d.filter(r => Object.values(r).some(v => v.toLowerCase().includes(search)));
 
-  const headers = ['Action','Date','Ticker','Name','ISIN','Shares','Τιμή','Exchange Rate','Result','Σύνολο','FX Fee','Merchant','Category'];
+  const headers = ['Action','Date','Ticker','Name','ISIN','Shares','Price','Exchange Rate','Result','Total','FX Fee','Merchant','Category'];
   const rows = d.map(r => [
     r.Action, r.Time, r.Ticker, r.Name, r.ISIN,
     r['No. of shares'] ? num(r['No. of shares']).toFixed(6) : '',
@@ -1062,6 +1551,335 @@ function renderRaw() {
 function clearRawFilters() {
   ['fRawAction','fRawFrom','fRawTo','fRawSearch'].forEach(id => document.getElementById(id).value = '');
   renderRaw();
+}
+
+// ── CHARTS ──
+function buildCharts() {
+  const buys  = DATA.filter(r => r.Action === 'Market buy');
+  const sells = DATA.filter(r => r.Action === 'Market sell');
+  const deps  = DATA.filter(r => r.Action === 'Deposit');
+  const cards = DATA.filter(r => r.Action === 'Card debit' || r.Action === 'New card cost');
+
+  // Collect sorted month keys across all relevant data
+  const allMonths = [...new Set([...buys,...sells,...deps,...cards].map(r => monthKey(r.Time)))].sort();
+
+  // ── 1. Monthly Overview bar chart ──
+  const mDep = {}, mNet = {}, mSpend = {};
+  allMonths.forEach(mk => { mDep[mk] = 0; mNet[mk] = 0; mSpend[mk] = 0; });
+  deps.forEach(r  => { mDep[monthKey(r.Time)]   += num(r.Total); });
+  buys.forEach(r  => { mNet[monthKey(r.Time)]   += num(r.Total); });
+  sells.forEach(r => { mNet[monthKey(r.Time)]   -= num(r.Total); });
+  cards.forEach(r => { mSpend[monthKey(r.Time)] += Math.abs(num(r.Total)); });
+
+  const series1 = [
+    { name:'Deposits',     data: allMonths.map(mk => mDep[mk]),   color: 'var(--accent)' },
+    { name:'Net Invested', data: allMonths.map(mk => Math.max(0, mNet[mk])), color: 'var(--green)' },
+    { name:'Spending',     data: allMonths.map(mk => mSpend[mk]), color: 'var(--red)' },
+  ];
+  document.getElementById('chartMonthly').innerHTML = svgGroupedBar(series1, allMonths.map(mk => monthLabel(mk)));
+
+  // ── 2. Cumulative line chart ──
+  let cumDep = 0, cumNet = 0;
+  const cumDepData = [], cumNetData = [];
+  allMonths.forEach(mk => {
+    cumDep += mDep[mk]; cumNet += Math.max(0, mNet[mk]);
+    cumDepData.push(cumDep); cumNetData.push(cumNet);
+  });
+  const series2 = [
+    { name:'Cumulative Deposits', data: cumDepData, color: 'var(--accent)' },
+    { name:'Cumulative Net Invested', data: cumNetData, color: 'var(--green)' },
+  ];
+  document.getElementById('chartCumulative').innerHTML = svgLine(series2, allMonths.map(mk => monthLabel(mk)));
+
+  // ── 3. DCA price chart ──
+  const tickers = [...new Set(buys.map(r => r.Ticker).filter(Boolean))];
+  const tickerColors = ['var(--accent)','var(--green)','var(--yellow)','var(--purple)','var(--orange)','var(--red)'];
+  const buyMonths = [...new Set(buys.map(r => monthKey(r.Time)))].sort();
+
+  const dcaSeries = tickers.map((tk, i) => {
+    const data = buyMonths.map(mk => {
+      const rows = buys.filter(r => r.Ticker === tk && monthKey(r.Time) === mk);
+      if (!rows.length) return null;
+      const totalShares = rows.reduce((s, r) => s + num(r['No. of shares']), 0);
+      return totalShares > 0 ? rows.reduce((s, r) => s + num(r['Price / share']) * num(r['No. of shares']), 0) / totalShares : null;
+    });
+    return { name: tk, data, color: tickerColors[i % tickerColors.length] };
+  });
+  document.getElementById('chartDCA').innerHTML = svgLine(dcaSeries, buyMonths.map(mk => monthLabel(mk)), { nullGaps: true });
+}
+
+// ── SVG chart helpers ──
+const CHART_H = 220, PAD = { t:10, r:24, b:46, l:64 };
+const cH = CHART_H - PAD.t - PAD.b;
+
+// Minimum px per data slot so charts never get cramped
+const BAR_MIN_PX = 56;  // per group (all series side-by-side)
+const LINE_MIN_PX = 38; // per point
+
+function chartW(n, minPx) { return Math.max(860, n * minPx); }
+function innerW(n, minPx) { return chartW(n, minPx) - PAD.l - PAD.r; }
+
+// How often to show an X label so they never overlap
+function labelStep(n) {
+  if (n <= 18) return 1;
+  if (n <= 36) return 2;
+  if (n <= 72) return 4;
+  return Math.ceil(n / 18);
+}
+
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  return Math.ceil(v / mag) * mag;
+}
+
+function yTicks(maxV, n = 4) {
+  const step = niceMax(maxV / n);
+  const ticks = [];
+  for (let i = 0; i <= n; i++) ticks.push(step * i);
+  return ticks;
+}
+
+function wrapChart(svgStr, W) {
+  return `<div class="chart-scroll"><div style="min-width:${W}px">${svgStr}</div></div>`;
+}
+
+function svgGroupedBar(series, labels) {
+  const n = labels.length, ns = series.length;
+  const W = chartW(n, BAR_MIN_PX), iW = innerW(n, BAR_MIN_PX);
+  const allVals = series.flatMap(s => s.data);
+  const maxV = niceMax(Math.max(...allVals, 1));
+  const ticks = yTicks(maxV);
+  const realMax = ticks[ticks.length - 1];
+  const groupW = iW / n;
+  const barW = Math.min(groupW / (ns + 1), 28);
+  const groupGap = (groupW - barW * ns) / 2;
+  const step = labelStep(n);
+
+  let svg = `<svg width="${W}" height="${CHART_H}" class="chart-svg">`;
+
+  // Grid + Y labels
+  ticks.forEach(t => {
+    const y = PAD.t + cH - (t / realMax) * cH;
+    svg += `<line x1="${PAD.l}" x2="${PAD.l + iW}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    svg += `<text x="${PAD.l - 6}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--text2)">${t >= 1000 ? (t/1000).toFixed(0)+'k' : t}</text>`;
+  });
+
+  // Bars
+  series.forEach((s, si) => {
+    s.data.forEach((v, i) => {
+      const x = PAD.l + i * groupW + groupGap + si * barW;
+      const bh = (v / realMax) * cH;
+      const y = PAD.t + cH - bh;
+      svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW - 1}" height="${Math.max(bh, 0).toFixed(1)}" fill="${s.color}" opacity="0.85" rx="2"><title>${s.name}: ${cur(v)}</title></rect>`;
+    });
+  });
+
+  // X labels (skip when dense)
+  labels.forEach((lbl, i) => {
+    if (i % step !== 0) return;
+    const x = PAD.l + i * groupW + groupW / 2;
+    svg += `<text x="${x}" y="${PAD.t + cH + 14}" text-anchor="end" font-size="11" fill="var(--text2)" transform="rotate(-35,${x},${PAD.t + cH + 14})">${lbl}</text>`;
+  });
+
+  // Legend
+  series.forEach((s, i) => {
+    const lx = PAD.l + i * 170;
+    svg += `<rect x="${lx}" y="${CHART_H - 10}" width="10" height="10" fill="${s.color}" rx="2"/><text x="${lx + 14}" y="${CHART_H - 1}" font-size="11" fill="var(--text2)">${s.name}</text>`;
+  });
+
+  svg += '</svg>';
+  return wrapChart(svg, W);
+}
+
+function svgLine(series, labels, opts = {}) {
+  const n = labels.length;
+  const W = chartW(n, LINE_MIN_PX), iW = innerW(n, LINE_MIN_PX);
+  const allVals = series.flatMap(s => s.data.filter(v => v !== null));
+  const maxV = niceMax(Math.max(...allVals, 1));
+  const minV = Math.min(...allVals, 0);
+  const ticks = yTicks(maxV);
+  const realMax = ticks[ticks.length - 1];
+  const xStep = n > 1 ? iW / (n - 1) : iW;
+  const step = labelStep(n);
+  // Thin out dots when many points
+  const showDot = n <= 60;
+
+  let svg = `<svg width="${W}" height="${CHART_H}" class="chart-svg">`;
+
+  // Grid + Y labels
+  ticks.forEach(t => {
+    const y = PAD.t + cH - (t / realMax) * cH;
+    svg += `<line x1="${PAD.l}" x2="${PAD.l + iW}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    svg += `<text x="${PAD.l - 6}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--text2)">${t >= 1000 ? (t/1000).toFixed(1)+'k' : t}</text>`;
+  });
+
+  // Lines + dots
+  series.forEach(s => {
+    let pathD = '', prevNull = true;
+    s.data.forEach((v, i) => {
+      const x = PAD.l + i * xStep;
+      if (v === null) { prevNull = true; return; }
+      const y = PAD.t + cH - ((v - minV) / (realMax - minV || 1)) * cH;
+      pathD += prevNull ? `M${x.toFixed(1)},${y.toFixed(1)}` : `L${x.toFixed(1)},${y.toFixed(1)}`;
+      prevNull = false;
+    });
+    if (pathD) svg += `<path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round"/>`;
+
+    if (showDot) {
+      s.data.forEach((v, i) => {
+        if (v === null) return;
+        const x = PAD.l + i * xStep;
+        const y = PAD.t + cH - ((v - minV) / (realMax - minV || 1)) * cH;
+        svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${s.color}"><title>${s.name} ${labels[i]}: ${cur(v)}</title></circle>`;
+      });
+    }
+  });
+
+  // X labels (skip when dense)
+  labels.forEach((lbl, i) => {
+    if (i % step !== 0) return;
+    const x = PAD.l + i * xStep;
+    svg += `<text x="${x}" y="${PAD.t + cH + 14}" text-anchor="end" font-size="11" fill="var(--text2)" transform="rotate(-35,${x},${PAD.t + cH + 14})">${lbl}</text>`;
+  });
+
+  // Legend
+  series.forEach((s, i) => {
+    const lx = PAD.l + i * 200;
+    svg += `<line x1="${lx}" y1="${CHART_H - 5}" x2="${lx + 16}" y2="${CHART_H - 5}" stroke="${s.color}" stroke-width="2"/><text x="${lx + 20}" y="${CHART_H - 1}" font-size="11" fill="var(--text2)">${s.name}</text>`;
+  });
+
+  svg += '</svg>';
+  return wrapChart(svg, W);
+}
+
+function svgHBar(items, opts = {}) {
+  if (!items.length) return '';
+  const ITEM_H = 28, GAP = 5, LABEL_W = 152, VAL_W = 80, RIGHT_PAD = 16;
+  const W = 860;
+  const barMaxW = W - LABEL_W - VAL_W - RIGHT_PAD;
+  const maxV = Math.max(...items.map(d => d.value), 1);
+  const H = items.length * (ITEM_H + GAP) + 8;
+  const color = opts.color || 'var(--accent)';
+
+  let svg = `<svg width="${W}" height="${H}" class="chart-svg">`;
+  items.forEach((item, i) => {
+    const y = i * (ITEM_H + GAP);
+    const bw = Math.max(2, (item.value / maxV) * barMaxW);
+    const lbl = item.label.length > 22 ? item.label.slice(0, 20) + '…' : item.label;
+    const barColor = item.color || color;
+    svg += `<text x="${LABEL_W - 8}" y="${y + ITEM_H / 2 + 4}" text-anchor="end" font-size="12" fill="var(--text2)">${lbl}</text>`;
+    svg += `<rect x="${LABEL_W}" y="${y + 4}" width="${bw.toFixed(1)}" height="${ITEM_H - 8}" fill="${barColor}" opacity="0.82" rx="3"><title>${item.label}: ${cur(item.value)}</title></rect>`;
+    svg += `<text x="${LABEL_W + bw + 7}" y="${y + ITEM_H / 2 + 4}" font-size="11" fill="var(--text2)">${cur(item.value)}</text>`;
+    if (item.pct != null) svg += `<text x="${W - RIGHT_PAD}" y="${y + ITEM_H / 2 + 4}" text-anchor="end" font-size="11" fill="var(--text2)" opacity="0.6">${item.pct}</text>`;
+  });
+  svg += '</svg>';
+  return `<div class="chart-wrap"><div class="chart-title">${opts.title || ''}</div><div class="chart-scroll">${svg}</div></div>`;
+}
+
+function chartWrap(title, innerHtml) {
+  if (!innerHtml) return '';
+  return `<div class="chart-wrap"><div class="chart-title">${title}</div>${innerHtml}</div>`;
+}
+
+// ── TAX ──
+function buildTax() {
+  const years = {};
+  const ensure = y => { if (!years[y]) years[y] = { gains: 0, losses: 0, divNet: 0, divTax: 0, interest: 0, deposited: 0, spent: 0 }; };
+
+  DATA.forEach(r => {
+    const y = r.Time ? r.Time.substring(0, 4) : null;
+    if (!y) return;
+    ensure(y);
+    if (r.Action === 'Market sell') {
+      const res = num(r.Result);
+      if (res >= 0) years[y].gains += res; else years[y].losses += Math.abs(res);
+    } else if (isDividend(r.Action)) {
+      years[y].divNet += num(r.Total);
+      const res = num(r.Result);
+      if (res < 0) years[y].divTax += Math.abs(res);
+    } else if (r.Action === 'Interest on cash') {
+      years[y].interest += num(r.Total);
+    } else if (r.Action === 'Deposit') {
+      years[y].deposited += num(r.Total);
+    } else if (r.Action === 'Card debit' || r.Action === 'New card cost') {
+      years[y].spent += Math.abs(num(r.Total));
+    }
+  });
+
+  const sortedYears = Object.keys(years).sort();
+  let html = `<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Grouped by calendar year. Consult a tax professional for your jurisdiction's specific rules.</p>`;
+
+  sortedYears.forEach(y => {
+    const d = years[y];
+    const netGain = d.gains - d.losses;
+    html += `<div style="margin-bottom:24px;">`;
+    html += `<div class="section-title" style="margin-bottom:12px;">📅 ${y}</div>`;
+    html += `<div class="cards">`;
+    html += `<div class="card"><div class="label">Realised Gains</div><div class="value mono positive">${cur(d.gains)}</div></div>`;
+    html += `<div class="card"><div class="label">Realised Losses</div><div class="value mono negative">${cur(d.losses)}</div></div>`;
+    html += `<div class="card"><div class="label">Net Capital Gain</div><div class="value mono ${netGain >= 0 ? 'positive' : 'negative'}">${cur(netGain)}</div></div>`;
+    html += `<div class="card"><div class="label">Dividends (Net)</div><div class="value mono positive">${cur(d.divNet)}</div>${d.divTax > 0 ? `<div class="sub">Withheld: ${cur(d.divTax)}</div>` : ''}</div>`;
+    html += `<div class="card"><div class="label">Interest Earned</div><div class="value mono positive">${cur(d.interest)}</div></div>`;
+    html += `<div class="card"><div class="label">Deposited</div><div class="value mono">${cur(d.deposited)}</div></div>`;
+    html += `</div></div>`;
+  });
+
+  const exportRows = sortedYears.map(y => {
+    const d = years[y];
+    return [y, d.gains.toFixed(2), d.losses.toFixed(2), (d.gains-d.losses).toFixed(2), d.divNet.toFixed(2), d.divTax.toFixed(2), d.interest.toFixed(2), d.deposited.toFixed(2)];
+  });
+  const csvStr = [['Year','Gains','Losses','Net Capital Gain','Dividends (Net)','Div Withheld Tax','Interest','Deposited'], ...exportRows]
+    .map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  html += `<div class="export-bar"><button class="btn btn-sm" onclick="
+    const b=new Blob(['\uFEFF'+'${csvStr.replace(/'/g,"\\'").replace(/\n/g,'\\n')}'],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tax_summary.csv';a.click()
+  ">⬇ Export Tax CSV</button></div>`;
+
+  document.getElementById('taxContent').innerHTML = html;
+}
+
+// ── MULTI-CSV MERGE ──
+function mergeCSV(text, filename) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return;
+  const headers = rows[0];
+  const newData = rows.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = r[i] || '');
+    return obj;
+  });
+  const existingIds = new Set(DATA.map(r => r.ID).filter(Boolean));
+  const added = newData.filter(r => !r.ID || !existingIds.has(r.ID));
+  DATA = [...DATA, ...added].sort((a, b) => a.Time.localeCompare(b.Time));
+
+  // Persist merged data
+  const mergedCSV = [HEADERS.join(','), ...DATA.map(r => HEADERS.map(h => `"${(r[h]||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  try { localStorage.setItem('t212_csv', mergedCSV); } catch(e) {}
+
+  const info = document.getElementById('fileInfo').textContent.split(' —')[0];
+  document.getElementById('fileInfo').textContent = `${info} + ${filename} — ${DATA.length} records`;
+  buildAll();
+}
+
+// ── Collapsible grids ──
+function toggleCollapse(btn) {
+  const wrap = btn.closest('.table-wrap, .chart-wrap');
+  const collapsed = wrap.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '+' : '−';
+  btn.title = collapsed ? 'Expand' : 'Minimise';
+}
+
+function injectCollapseButtons() {
+  document.querySelectorAll('.table-wrap, .chart-wrap').forEach(el => {
+    if (el.querySelector(':scope > .collapse-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'collapse-btn';
+    btn.textContent = '−';
+    btn.title = 'Minimise';
+    btn.onclick = () => toggleCollapse(btn);
+    el.insertBefore(btn, el.firstChild);
+  });
 }
 
 // ── Tab switching ──
@@ -1131,11 +1949,29 @@ uploadZone.addEventListener('drop', e => {
 
 function readFile(file) {
   const reader = new FileReader();
-  reader.onload = e => loadCSV(e.target.result);
+  reader.onload = e => loadCSV(e.target.result, file.name);
   reader.readAsText(file);
 }
 
-// Auto-load if pre-loaded
+document.getElementById('mergeInput').addEventListener('change', e => {
+  if (!e.target.files[0]) return;
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = ev => mergeCSV(ev.target.result, file.name);
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ── localStorage restore ──
+(function() {
+  try {
+    const saved = localStorage.getItem('t212_csv');
+    if (saved) {
+      const name = localStorage.getItem('t212_csv_name') || '';
+      loadCSV(saved, name ? name + ' (cached)' : '', false);
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
