@@ -33,6 +33,11 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .header { display:flex; align-items:center; justify-content:space-between; padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:24px; flex-wrap:wrap; gap:12px; }
 .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
 .header h1 span { color:var(--accent); }
+.header-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end; }
+.header-export { display:flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); }
+.header-export label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text2); white-space:nowrap; }
+.header-export select { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:7px 30px 7px 10px; border-radius:6px; font-size:13px; font-family:'DM Sans',sans-serif; min-width:180px; height:34px; }
+.header-export select:focus { outline:none; border-color:var(--accent); }
 
 /* Upload */
 .upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:40px; text-align:center; cursor:pointer; transition:all .2s; margin-bottom:24px; }
@@ -108,6 +113,9 @@ tr:hover td { background:rgba(79,140,255,.03); }
   .app { padding:12px; }
   .header { padding:12px 0; gap:8px; }
   .header h1 { font-size:17px; }
+  .header-actions { width:100%; justify-content:flex-start; }
+  .header-export { width:100%; justify-content:space-between; }
+  .header-export select { min-width:0; width:100%; }
 
   /* Tabs: horizontal scroll strip */
   .tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:3px; }
@@ -183,8 +191,15 @@ tr:hover td { background:rgba(79,140,255,.03); }
 <div class="app">
   <div class="header">
     <h1>📊 Trading 212 <span>Accounting Tool</span></h1>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div class="header-actions">
       <span class="muted" style="font-size:13px;" id="fileInfo"></span>
+      <div class="header-export">
+        <label for="csvExportProfile">CSV Export</label>
+        <select id="csvExportProfile">
+          <option value="standard">Standard (, and .)</option>
+          <option value="excel_el">Excel (Greek) (; and ,)</option>
+        </select>
+      </div>
       <button class="btn" onclick="try{localStorage.removeItem('t212_csv');localStorage.removeItem('t212_csv_name');}catch(e){}location.reload()" title="Clear cached CSV">Clear</button>
       <button class="btn" id="addCsvBtn" onclick="document.getElementById('mergeInput').click()" style="display:none" title="Merge another CSV export">Add CSV</button>
       <button class="btn btn-accent" onclick="document.getElementById('fileInput').click()">Load CSV</button>
@@ -504,6 +519,12 @@ tr:hover td { background:rgba(79,140,255,.03); }
 let DATA = [];
 let HEADERS = [];
 let sortState = {};
+let TAX_EXPORT_ROWS = [];
+const EXPORT_PROFILE_KEY = 't212_csv_export_profile';
+const EXPORT_PROFILES = {
+  standard: { delimiter: ',', decimalComma: false },
+  excel_el: { delimiter: ';', decimalComma: true }
+};
 
 // ── CSV Parser ──
 function parseCSV(text) {
@@ -655,15 +676,40 @@ function sortTable(tableId, colIdx) {
 }
 
 // ── CSV Export ──
-function exportCSV(tableId) {
-  const table = document.getElementById(tableId);
-  const rows = Array.from(table.querySelectorAll('tr'));
-  const csv = rows.map(r => Array.from(r.querySelectorAll('th,td')).map(c => `"${c.textContent.replace(/"/g,'""')}"`).join(',')).join('\n');
+function getExportProfile() {
+  const value = document.getElementById('csvExportProfile')?.value || 'standard';
+  return EXPORT_PROFILES[value] || EXPORT_PROFILES.standard;
+}
+
+function formatExportValue(value, profile) {
+  const text = `${value ?? ''}`;
+  if (!profile.decimalComma) return text;
+  if (/^[+-]?\d+\.\d+%?$/.test(text)) return text.replace('.', ',');
+  return text;
+}
+
+function buildCSV(rows) {
+  const profile = getExportProfile();
+  return rows.map(row =>
+    row.map(value => `"${formatExportValue(value, profile).replace(/"/g, '""')}"`).join(profile.delimiter)
+  ).join('\n');
+}
+
+function downloadCSV(filename, rows) {
+  const csv = buildCSV(rows);
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = tableId + '_export.csv';
+  a.download = filename;
   a.click();
+}
+
+function exportCSV(tableId) {
+  const table = document.getElementById(tableId);
+  const rows = Array.from(table.querySelectorAll('tr')).map(r =>
+    Array.from(r.querySelectorAll('th,td')).map(c => c.textContent)
+  );
+  downloadCSV(tableId + '_export.csv', rows);
 }
 
 // ── Build all sections ──
@@ -1833,12 +1879,8 @@ function buildTax() {
     const d = years[y];
     return [y, d.gains.toFixed(2), d.losses.toFixed(2), (d.gains-d.losses).toFixed(2), d.divNet.toFixed(2), d.divTax.toFixed(2), d.interest.toFixed(2), d.deposited.toFixed(2)];
   });
-  const csvStr = [['Year','Gains','Losses','Net Capital Gain','Dividends (Net)','Div Withheld Tax','Interest','Deposited'], ...exportRows]
-    .map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-  html += `<div class="export-bar"><button class="btn btn-sm" onclick="
-    const b=new Blob(['\uFEFF'+'${csvStr.replace(/'/g,"\\'").replace(/\n/g,'\\n')}'],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tax_summary.csv';a.click()
-  ">⬇ Export Tax CSV</button></div>`;
+  TAX_EXPORT_ROWS = [['Year','Gains','Losses','Net Capital Gain','Dividends (Net)','Div Withheld Tax','Interest','Deposited'], ...exportRows];
+  html += `<div class="export-bar"><button class="btn btn-sm" onclick="downloadCSV('tax_summary.csv', TAX_EXPORT_ROWS)">⬇ Export Tax CSV</button></div>`;
 
   document.getElementById('taxContent').innerHTML = html;
 }
@@ -1937,6 +1979,16 @@ function attachFilterListeners() {
 // ── File handling ──
 const fileInput = document.getElementById('fileInput');
 const uploadZone = document.getElementById('uploadZone');
+const csvExportProfile = document.getElementById('csvExportProfile');
+
+try {
+  const savedProfile = localStorage.getItem(EXPORT_PROFILE_KEY);
+  if (savedProfile && EXPORT_PROFILES[savedProfile]) csvExportProfile.value = savedProfile;
+} catch(e) {}
+
+csvExportProfile.addEventListener('change', () => {
+  try { localStorage.setItem(EXPORT_PROFILE_KEY, csvExportProfile.value); } catch(e) {}
+});
 
 fileInput.addEventListener('change', e => {
   if (e.target.files[0]) readFile(e.target.files[0]);
